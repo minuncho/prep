@@ -1,0 +1,56 @@
+﻿start_timestamp,end_timestamp,activity_type,Member,activity_summary
+2026-01-01 08:15:00,2026-01-01 08:45:00,comm,"B,D",Morning DPC
+2026-01-01 09:01:00,2026-01-01 09:31:00,comm,C,Family conference
+2026-01-01 09:46:00,2026-01-01 10:16:00,logistics,"A,D",Cargo stowage
+2026-01-01 10:22:00,2026-01-01 11:07:00,exercise,"C,D",Treadmill session
+2026-01-01 11:22:00,2026-01-01 12:07:00,comm,C,Ground science conference
+2026-01-01 12:25:00,2026-01-01 13:10:00,comm,"A,B,D",Evening DPC
+2026-01-02 08:15:00,2026-01-02 08:45:00,comm,C,Morning DPC
+2026-01-02 09:02:00,2026-01-02 09:42:00,research,"A,C,D",Plant growth experiment
+2026-01-02 09:49:00,2026-01-02 10:34:00,comm,A,Family conference
+2026-01-02 10:51:00,2026-01-02 11:26:00,sampling,A,Surface microbial sampling
+2026-01-02 11:46:00,2026-01-02 12:16:00,personal,D,Meal prep
+2026-01-02 12:36:00,2026-01-02 13:51:00,sampling,"B,C",Surface microbial sampling
+2026-01-02 14:11:00,2026-01-02 14:46:00,exercise,"A,C,D",Cycle ergometer session
+2026-01-02 15:00:00,2026-01-02 15:35:00,repair,"A,B",Exercise device maintenance
+2026-01-02 15:46:00,2026-01-02 16:16:00,comm,"C,D",Evening DPC
+2026-01-03 08:15:00,2026-01-03 08:45:00,comm,D,Morning DPC
+2026-01-03 09:05:00,2026-01-03 09:55:00,exercise,"A,B",Treadmill session
+2026-01-03 10:13:00,2026-01-03 11:18:00,research,"B,C,D",Radiation monitoring check
+2026-01-03 11:23:00,2026-01-03 11:53:00,comm,"A,D",Ground science conference
+2026-01-03 11:58:00,2026-01-03 12:48:00,research,D,Plant growth experiment
+2026-01-03 13:07:00,2026-01-03 13:47:00,research,"B,D",Fluid physics experiment
+2026-01-03 14:00:00,2026-01-03 14:45:00,exercise,"A,B",Cycle ergometer session
+2026-01-03 15:03:00,2026-01-03 15:38:00,research,C,Combustion experiment setup
+2026-01-03 15:54:00,2026-01-03 16:24:00,comm,"B,C,D",Evening DPC
+2026-01-04 08:15:00,2026-01-04 09:00:00,comm,"A,C",Morning DPC
+2026-01-04 09:08:00,2026-01-04 09:38:00,comm,D,Family conference
+2026-01-04 09:43:00,2026-01-04 10:18:00,research,"A,B,D",Combustion experiment setup
+2026-01-04 10:38:00,2026-01-04 11:23:00,comm,"B,C,D",Ground science conference
+2026-01-04 11:34:00,2026-01-04 12:04:00,comm,"B,D",Family conference
+2026-01-04 12:21:00,2026-01-04 12:56:00,logistics,"B,C",Supply transfer
+2026-01-04 13:15:00,2026-01-04 14:00:00,comm,"C,D",Evening DPC
+2026-01-05 08:15:00,2026-01-05 08:45:00,comm,"A,C",Morning DPC
+2026-01-05 09:00:00,2026-01-05 10:15:00,exercise,"B,C,D",Cycle ergometer session
+2026-01-05 10:20:00,2026-01-05 11:20:00,research,A,Combustion experiment setup
+2026-01-05 11:33:00,2026-01-05 12:33:00,logistics,"A,B",Trash consolidation
+2026-01-05 12:46:00,2026-01-05 13:31:00,comm,D,Ground science conference
+2026-01-05 13:48:00,2026-01-05 14:53:00,sampling,C,Surface microbial sampling
+2026-01-05 14:59:00,2026-01-05 16:14:00,sampling,"B,C",Air quality sampling
+2026-01-05 16:31:00,2026-01-05 17:16:00,comm,"A,B,D",Ground science conference
+2026-01-05 17:28:00,2026-01-05 17:58:00,comm,A,Evening DPC
+2026-01-06 08:15:00,2026-01-06 08:45:00,comm,B,Morning DPC
+2026-01-06 09:02:00,2026-01-06 09:32:00,exercise,B,Resistance exercise device session
+2026-01-06 09:39:00,2026-01-06 10:14:00,sampling,"C,D",Water quality sampling
+2026-01-06 10:29:00,2026-01-06 11:44:00,research,"B,D",Plant growth experiment
+2026-01-06 12:01:00,2026-01-06 12:46:00,comm,"A,B",Family conference
+2026-01-06 12:56:00,2026-01-06 13:36:00,exercise,"A,C,D",Resistance exercise device session
+2026-01-06 13:55:00,2026-01-06 14:25:00,comm,"C,D",Evening DPC
+2026-01-07 08:15:00,2026-01-07 08:45:00,comm,"A,C",Morning DPC
+2026-01-07 09:04:00,2026-01-07 10:19:00,logistics,C,Inventory audit
+2026-01-07 10:37:00,2026-01-07 11:07:00,comm,D,Family conference
+2026-01-07 11:22:00,2026-01-07 12:47:00,research,A,Crew health survey
+2026-01-07 12:56:00,2026-01-07 13:41:00,sampling,"A,D",Acoustic level measurement
+2026-01-07 13:50:00,2026-01-07 14:20:00,comm,A,Ground science conference
+2026-01-07 14:40:00,2026-01-07 15:55:00,sampling,"A,C",Acoustic level measurement
+2026-01-07 16:10:00,2026-01-07 16:40:00,comm,"A,C",Evening DPC

@@ -1,0 +1,52 @@
+﻿Biomarker,Category,Method,Period,biomarker_summary,Criteria
+TST,Actigraphy,Device,continuous,Total Sleep Time. 침상에서 실제로 잠든 총 시간,"Figure(광노출 정보 포함, 비전문가도 해석하기 쉬운 형태) + TST, SL, SE 등을 표/히트맵으로 함께 제공"
+SL,Actigraphy,Device,continuous,Sleep Latency. 잠자리에 누운 후 실제 잠이 들기까지 걸린 시간,"Figure(광노출 정보 포함, 비전문가도 해석하기 쉬운 형태) + TST, SL, SE 등을 표/히트맵으로 함께 제공"
+SE,Actigraphy,Device,continuous,Sleep Efficiency. 침대에 누워 있던 총 시간(TIB) 대비 실제 수면 시간(SLP)의 백분율,"Figure(광노출 정보 포함, 비전문가도 해석하기 쉬운 형태) + TST, SL, SE 등을 표/히트맵으로 함께 제공"
+WASO,Actigraphy,Device,continuous,Wake After Sleep Onset. 잠이 든 이후 아침에 깰 때까지 중간에 깨어 있던 총 시간,"Figure(광노출 정보 포함, 비전문가도 해석하기 쉬운 형태) + TST, SL, SE 등을 표/히트맵으로 함께 제공"
+Sleep Onset/Offset,Actigraphy,Device,continuous,잠든 시간과 아침에 최종 기상한 시간,"Figure(광노출 정보 포함, 비전문가도 해석하기 쉬운 형태) + TST, SL, SE 등을 표/히트맵으로 함께 제공"
+HbA1c,Biochemical markers,sampling,1d,"[혈액] 과거 2~3개월간의 평균 혈당 수치로, 당뇨병 진단 및 조절 상태 지표",각 수치를 막대그래프로 표시. 의미는 '바이오마커 정리 시각화' 그림 참고
+Troponin,Biochemical markers,sampling,1d,[혈액] 심장 근육이 손상될 때 혈액으로 방출되는 단백질로 심근경색 지표,각 수치를 막대그래프로 표시. 의미는 '바이오마커 정리 시각화' 그림 참고
+CK-MB,Biochemical markers,sampling,1d,[혈액] 심장 근육이 손상될 때 혈액으로 방출되는 단백질로 심근경색 지표,각 수치를 막대그래프로 표시. 의미는 '바이오마커 정리 시각화' 그림 참고
+PSA,Biochemical markers,sampling,1d,[혈액] 전립선 세포에서 분비되는 단백질로 전립선암 선별 및 진단 지표,각 수치를 막대그래프로 표시. 의미는 '바이오마커 정리 시각화' 그림 참고
+AFP,Biochemical markers,sampling,1d,[혈액] 고환암이나 간암 환자에게서 특징적으로 상승하는 종양표지자,각 수치를 막대그래프로 표시. 의미는 '바이오마커 정리 시각화' 그림 참고
+CEA,Biochemical markers,sampling,1d,"[혈액] 대장암, 위암 등에서 주로 관찰되는 종양 지표",각 수치를 막대그래프로 표시. 의미는 '바이오마커 정리 시각화' 그림 참고
+LDL-cholesterol,Biochemical markers,sampling,1d,[혈액] 심혈관질환 위험도를 예측하는 지질 대사 지표,각 수치를 막대그래프로 표시. 의미는 '바이오마커 정리 시각화' 그림 참고
+ApoB,Biochemical markers,sampling,1d,[혈액] 심혈관질환 위험도를 예측하는 지질 대사 지표,각 수치를 막대그래프로 표시. 의미는 '바이오마커 정리 시각화' 그림 참고
+Urine albumin,Biochemical markers,sampling,1d,[소변] 단백뇨. 소변으로 단백질이 새어 나오는 현상으로 신장 기능 저하 및 신장 질환 지표,각 수치를 막대그래프로 표시. 의미는 '바이오마커 정리 시각화' 그림 참고
+Urine glucose,Biochemical markers,sampling,1d,[소변] 혈당이 일정 수준을 넘을 때 소변으로 배출되는 포도당으로 당뇨병 의심 지표,각 수치를 막대그래프로 표시. 의미는 '바이오마커 정리 시각화' 그림 참고
+Urine occult blood / RBC,Biochemical markers,sampling,1d,"[소변] 소변에 피가 섞여 나오는 상태로 요로상피암, 방광염, 신장결석 등 비뇨기계 이상 지표",각 수치를 막대그래프로 표시. 의미는 '바이오마커 정리 시각화' 그림 참고
+Creatinine,Biochemical markers,sampling,1d,[혈액+소변] 혈액과 소변을 함께 비교하여 신장의 여과 기능을 평가하는 신기능 지표,각 수치를 막대그래프로 표시. 의미는 '바이오마커 정리 시각화' 그림 참고
+BUN,Biochemical markers,sampling,1d,[혈액+소변] 요소질소. 혈액과 소변을 함께 비교하여 신장의 여과 기능을 평가하는 신기능 지표,각 수치를 막대그래프로 표시. 의미는 '바이오마커 정리 시각화' 그림 참고
+CIMT,Carotid intima-media thickness,Device,1y (고위험군 1mo),목 부위 경동맥의 두께를 초음파로 측정해 쌓인 plaque 양을 가늠하고 죽상동맥경화증의 진행 여부를 진단,0.9mm 미만 normal / 0.9~1.5mm moderate / 1.5mm 초과 high 로 평가
+Blood cell count,Cellular profile,sampling,1w,"RBC, WBC(+differential), Hb, Hct, platelet 등 가장 기본적인 혈액세포의 양적 상태 파악","4개 항목을 히트맵으로 각각 따로 보여주고, 항목별로 normal / moderate / high 로 평가"
+Immune cell composition,Cellular profile,sampling,1w,"T cell, B cell, NK cell, monocyte 등 WBC 수만으로는 알 수 없는 면역세포 구성 변화 파악","4개 항목을 히트맵으로 각각 따로 보여주고, 항목별로 normal / moderate / high 로 평가"
+Inflammatory & immune markers,Cellular profile,sampling,1w,"IL-6, IL-1β, TNF-α, IL-10, IFN-γ, CRP 등 면역세포의 활성 및 염증 상태 파악","4개 항목을 히트맵으로 각각 따로 보여주고, 항목별로 normal / moderate / high 로 평가"
+Cellular stress markers,Cellular profile,sampling,1w,"γ-H2AX, 53BP1, 8-OHdG, MDA, 8-isoprostane 등 우주 방사선·산화 스트레스에 따른 세포와 DNA 손상 평가","4개 항목을 히트맵으로 각각 따로 보여주고, 항목별로 normal / moderate / high 로 평가"
+Motor Praxis (MP),Cognition,computer test,1-2 times/y,감각운동 속도와 기본적인 운동 협응 능력,막대 그래프
+Visual Object Learning Test (VOLT),Cognition,computer test,1-2 times/y,복잡한 3차원 물체에 대한 시각적 학습 및 기억력,막대 그래프
+Fractal 2-Back (F2B),Cognition,computer test,1-2 times/y,공간 작업 기억력과 집행 기능,막대 그래프
+Abstract Matching (AM),Cognition,computer test,1-2 times/y,개념적 추론 및 추상화 능력,막대 그래프
+Line Orientation Test (LOT),Cognition,computer test,1-2 times/y,공간 지각력과 시각적 인지 능력,막대 그래프
+Emotion Recognition Task (ERT),Cognition,computer test,1-2 times/y,사회적 인지 능력 및 감정 표현(표정) 식별 능력,막대 그래프
+Matrix Reasoning Test (MRT),Cognition,computer test,1-2 times/y,"추상적 추론, 지능, 문제 해결 능력",막대 그래프
+Digit Symbol Substitution Test (DSST),Cognition,computer test,1-2 times/y,"복합적 시각 탐색, 작업 기억력, 정신운동 속도",막대 그래프
+Balloon Analog Risk Task (BART),Cognition,computer test,1-2 times/y,위험 감수 행동 및 불확실한 상황에서의 의사결정 능력,막대 그래프
+Psychomotor Vigilance Test (PVT),Cognition,computer test,1-2 times/y,반응 시간을 통해 행동적 각성 상태와 지속적 주의력(경계심) 측정,막대 그래프
+Fecal (Gut) microbiome,Microbiome,sampling,3-6mo,"Firmicutes, Bacteroidetes, Actinobacteria, Proteobacteria 등. 소화기 건강, 대사 장애, 전신 염증, 장-뇌 축 상호작용 평가 및 대장 질환 선별",
+Salivary (Oral) microbiome,Microbiome,sampling,3-6mo,"Bacteroidetes, Proteobacteria, Streptococcus 등. 구강 건강 진단, 호흡기 질환 위험 평가, 비침습적 바이오마커 발굴",
+General body (Skin/Surface) microbiome,Microbiome,sampling,3-6mo,"Cutibacterium, Corynebacterium, Staphylococcus 등. 피부 질환, 상처 치유, 법의학적 신원 확인",
+Openness,Personality questionnaire,computer test,1mo,5대 성격 요인 중 개방성 (하위 항목으로 세분화),1-10 scale
+Conscientiousness,Personality questionnaire,computer test,1mo,5대 성격 요인 중 성실성 (하위 항목으로 세분화),1-10 scale
+Extraversion,Personality questionnaire,computer test,1mo,5대 성격 요인 중 외향성 (하위 항목으로 세분화),1-10 scale
+Agreeableness,Personality questionnaire,computer test,1mo,5대 성격 요인 중 우호성 (하위 항목으로 세분화),1-10 scale
+Neuroticism,Personality questionnaire,computer test,1mo,5대 성격 요인 중 신경증 (하위 항목으로 세분화),1-10 scale
+Self-reported sleep quality,Sleep quality/team questionnaire,computer test,1d,[깬 후] 주관적으로 인지한 수면의 질,actigraphy 측정값과 비교
+Self-reported sleep duration,Sleep quality/team questionnaire,computer test,1d,[깬 후] 주관적으로 인지한 수면의 양. actigraphy의 WASO와 함께 인지 영역과 유의한 연관성 유지,actigraphy 측정값과 비교
+Mood,Sleep quality/team questionnaire,computer test,1d,[자기 전] 기분,actigraphy 측정값과 비교
+Team cohesion,Sleep quality/team questionnaire,computer test,1d,[자기 전] 팀 단합,actigraphy 측정값과 비교
+Habitability,Sleep quality/team questionnaire,computer test,1d,[자기 전] 거주 편의성/적합성,actigraphy 측정값과 비교
+Visual input,Sensorimotor,Device,pre/post mission,시각 정보 의존도,지구에 있었을 때의 능력치와 현재 능력치를 비교
+Vestibular input,Sensorimotor,Device,pre/post mission,전정계의 공간 방향과 균형 유지 기여도,지구에 있었을 때의 능력치와 현재 능력치를 비교
+Somatosensory input,Sensorimotor,Device,pre/post mission,발/관절 등의 체성감각 정보 활용도,지구에 있었을 때의 능력치와 현재 능력치를 비교
+Sensory reweighting,Sensorimotor,Device,pre/post mission,특정 감각 정보가 불확실할 때 다른 감각으로 전환하는 정도,지구에 있었을 때의 능력치와 현재 능력치를 비교
+Postural stability,Sensorimotor,Device,pre/post mission,자세의 안정적 유지,지구에 있었을 때의 능력치와 현재 능력치를 비교
