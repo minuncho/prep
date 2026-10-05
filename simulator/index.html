@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ear-Worn Astronaut Device Simulator</title>
+<style>
+  /* ───────── 색상·기본 설정 (흰 배경, 검은 기기) ───────── */
+  :root {
+    --bg: #ffffff;
+    --panel: #ffffff;
+    --soft: #f5f6f8;
+    --line: #e2e5ea;
+    --text: #14171c;
+    --muted: #6b7280;
+    --accent: #1267d6;
+    --ok: #17804a;
+    --warn: #a86400;
+    --danger: #c62828;
+    --ear-line: #b9bec7;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
+  body {
+    color: var(--text);
+    background: var(--bg);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-size: 15px;
+    line-height: 1.5;
+  }
+  .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+
+  /* ───────── 전체 배치 ───────── */
+  .app {
+    display: flex;
+    flex-direction: column;
+    min-height: 100%;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 16px;
+    gap: 12px;
+  }
+  header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px 16px;
+  }
+  header h1 { margin: 0; font-size: 20px; letter-spacing: -.01em; }
+  header p { margin: 0; color: var(--muted); font-size: 13px; }
+
+  button {
+    font: inherit;
+    color: var(--text);
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 8px 14px;
+    min-height: 38px;
+    cursor: pointer;
+  }
+  button:hover:not(:disabled) { border-color: var(--text); }
+  button:disabled { opacity: .45; cursor: not-allowed; }
+  button:focus-visible, .part:focus-visible, .legend li:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+  .btn-primary { background: var(--text); color: #fff; border-color: var(--text); font-weight: 600; }
+  .btn-primary.running { background: var(--panel); color: var(--text); border-color: var(--line); }
+  .btn-small { min-height: 30px; padding: 3px 10px; font-size: 12.5px; }
+
+  /* 2분할: 왼쪽 기기, 오른쪽 로그 2개 */
+  main {
+    flex: 1 1 auto;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 12px;
+    min-height: 0;
+  }
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    min-width: 0;
+  }
+  .panel > h2 {
+    margin: 0;
+    padding: 10px 14px;
+    font-size: 14px;
+    font-weight: 600;
+    border-bottom: 1px solid var(--line);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    min-height: 51px;
+  }
+  .panel > h2 small { color: var(--muted); font-weight: 400; font-size: 12px; }
+  .panel > h2 .side { display: flex; align-items: center; gap: 10px; }
+  .right { display: grid; grid-template-rows: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; min-height: 0; }
+
+  /* ───────── 왼쪽: 기기 모형 ───────── */
+  .device-body { padding: 12px 14px 14px; display: flex; flex-direction: column; gap: 10px; }
+  .tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+  .tile { background: var(--soft); border-radius: 10px; padding: 8px 10px; }
+  .tile .k { color: var(--muted); font-size: 12px; }
+  .tile .v { font-size: 22px; font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1.2; }
+  .tile .v span { font-size: 12px; font-weight: 400; color: var(--muted); margin-left: 3px; }
+  .tile.danger .v { color: var(--danger); }
+
+  .stage svg { display: block; width: 100%; height: auto; max-height: 46vh; }
+  .ear-outline { fill: #fff; stroke: var(--ear-line); stroke-width: 2.5; stroke-linejoin: round; }
+  .ear-fold { fill: none; stroke: var(--ear-line); stroke-width: 2.5; stroke-linecap: round; }
+  .ear-concha { fill: #eceef1; }
+  .ear-canal { fill: #c9cdd4; }
+  .dev { fill: #111317; }
+  .dev-hook { fill: none; stroke: #111317; stroke-width: 11; stroke-linecap: round; }
+
+  /* 부품 표시(번호 동그라미 + 이름표) */
+  .part { cursor: pointer; outline: none; }
+  .part .dot { fill: #fff; stroke: var(--accent); stroke-width: 2; transition: fill .2s; }
+  .part .num { fill: var(--accent); font-size: 12px; font-weight: 700; text-anchor: middle; dominant-baseline: central; pointer-events: none; }
+  .part .lead { stroke: #9aa1ad; stroke-width: 1; stroke-dasharray: 3 3; }
+  .part .name { fill: var(--text); font-size: 15px; dominant-baseline: central; }
+  .part .hit { fill: transparent; }
+  .part .ring { fill: none; stroke: var(--accent); stroke-width: 2.5; opacity: 0; transform-box: fill-box; transform-origin: center; }
+  .part:hover .dot, .part:focus-visible .dot { fill: #d8e7fb; }
+  /* 데이터가 들어온 순간의 하이라이트 */
+  .part.active .dot { fill: var(--accent); }
+  .part.active .num { fill: #fff; }
+  .part.active .name { fill: var(--accent); }
+  .part.active .ring { animation: ping .55s ease-out; }
+  @keyframes ping {
+    from { opacity: .9; transform: scale(1); }
+    to { opacity: 0; transform: scale(2.6); }
+  }
+
+  /* 스피커 소리 파동: 음성 출력 중에만 보임 */
+  .waves path { fill: none; stroke: var(--accent); stroke-width: 2.5; stroke-linecap: round; opacity: 0; }
+  .speaking .waves path { animation: wave 1s infinite; }
+  .speaking .waves path:nth-child(2) { animation-delay: .18s; }
+  .speaking .waves path:nth-child(3) { animation-delay: .36s; }
+  .speaking .part[data-part="speaker"] .dot { fill: var(--accent); }
+  .speaking .part[data-part="speaker"] .num { fill: #fff; }
+  @keyframes wave {
+    0% { opacity: 0; }
+    30% { opacity: 1; }
+    100% { opacity: 0; }
+  }
+
+  /* 부품 설명 목록 */
+  .legend { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .legend li {
+    display: flex; gap: 8px; align-items: flex-start;
+    background: var(--soft); border: 1px solid transparent; border-radius: 10px;
+    padding: 8px 10px; cursor: pointer; transition: border-color .2s, background .2s;
+  }
+  .legend li.active { border-color: var(--accent); background: #e9f1fd; }
+  .legend .n {
+    flex: 0 0 auto; width: 22px; height: 22px; border-radius: 50%;
+    border: 1.5px solid var(--accent); color: var(--accent); background: #fff;
+    font-size: 12px; font-weight: 700; display: grid; place-items: center; margin-top: 1px;
+  }
+  .legend b { display: block; font-size: 13.5px; font-weight: 600; }
+  .legend span { color: var(--muted); font-size: 12.5px; }
+
+  /* 툴팁 */
+  #tooltip {
+    position: fixed; z-index: 10; max-width: 280px;
+    background: #14171c; color: #fff;
+    border-radius: 8px; padding: 8px 10px; font-size: 13px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, .2);
+    pointer-events: none; opacity: 0; transition: opacity .12s;
+  }
+  #tooltip.show { opacity: 1; }
+  #tooltip b { display: block; margin-bottom: 2px; }
+
+  /* ───────── 오른쪽: 로그 ───────── */
+  .log { flex: 1 1 auto; overflow-y: auto; min-height: 0; overflow-wrap: anywhere; }
+  .empty { color: var(--muted); padding: 16px 14px; font-size: 13px; font-family: inherit; }
+  .row, .row-head {
+    display: grid;
+    grid-template-columns: 12.5em minmax(0, 1fr) 4em 4.6em;
+    gap: 8px;
+    padding: 3px 14px;
+    font-size: 12.5px;
+  }
+  .row-head { color: var(--muted); border-bottom: 1px solid var(--line); padding-top: 6px; padding-bottom: 6px; }
+  .row { font-variant-numeric: tabular-nums; }
+  .row:nth-child(even) { background: #fafafb; }
+  .row .ts { color: var(--muted); }
+  .st-normal { color: var(--ok); }
+  .st-alert { color: var(--danger); font-weight: 700; }
+  .source { padding: 6px 14px; font-size: 12.5px; color: var(--muted); border-bottom: 1px solid var(--line); }
+  .source.error { color: var(--danger); background: #fdf1f1; }
+
+  .voice { padding: 9px 14px; border-bottom: 1px solid var(--line); }
+  .voice .meta { display: flex; gap: 8px; align-items: center; font-size: 12px; color: var(--muted); }
+  .voice .tag { border: 1px solid var(--line); border-radius: 999px; padding: 0 8px; }
+  .voice .say { font-size: 14.5px; margin-top: 2px; }
+  .voice.is-none .say { color: var(--muted); }
+
+  /* ───────── 좁은 화면: 세로로 쌓기 ───────── */
+  @media (min-width: 901px) {
+    .app { height: 100vh; }
+    .device-body { overflow-y: auto; }
+  }
+  @media (max-width: 900px) {
+    main { grid-template-columns: minmax(0, 1fr); }
+    .right { grid-template-rows: none; }
+    .right .panel { height: 300px; }
+    .stage svg { max-height: none; }
+  }
+  @media (max-width: 480px) {
+    .legend { grid-template-columns: minmax(0, 1fr); }
+    .row, .row-head { font-size: 11px; gap: 6px; padding-left: 10px; padding-right: 10px; }
+    .tile .v { font-size: 19px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .part.active .ring { animation: none; }
+    .speaking .waves path { animation: none; opacity: 1; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div>
+      <h1>Ear-Worn Astronaut Device Simulator</h1>
+      <p>Measure → store as A_data.csv → look up instruction → voice guidance</p>
+    </div>
+    <button id="btnStart" class="btn-primary" type="button" disabled>▶ Start simulation</button>
+  </header>
+
+  <main>
+    <!-- 왼쪽: 기기 모형 -->
+    <section class="panel">
+      <h2>Device <small>Hover or tap a part for details</small></h2>
+      <div class="device-body">
+        <div class="tiles">
+          <div class="tile" id="tileHR"><div class="k">Heart rate</div><div class="v"><b>--</b><span>bpm</span></div></div>
+          <div class="tile" id="tileSpO2"><div class="k">SpO2</div><div class="v"><b>--</b><span>%</span></div></div>
+          <div class="tile" id="tileActivity"><div class="k">Activity</div><div class="v"><b>--</b><span>counts</span></div></div>
+        </div>
+
+        <div class="stage">
+          <svg id="deviceSvg" viewBox="80 60 470 380" role="img" aria-label="Side view of an ear wearing an open-ear, hook-style device">
+            <!-- 귀 뒤 본체 (귀보다 먼저 그려서 귓바퀴 뒤에 놓인 것처럼 보이게) -->
+            <rect class="dev" x="326" y="178" width="42" height="170" rx="21" transform="rotate(8 347 263)"/>
+
+            <!-- 귀 옆모습 -->
+            <path class="ear-outline" d="M222 200 C205 150 235 100 285 105 C335 110 355 170 348 235 C343 290 320 325 305 365 C295 400 270 425 248 415 C228 405 228 370 236 345 C240 330 232 320 226 310 C215 300 212 280 224 268 C232 255 228 230 222 200 Z"/>
+            <path class="ear-fold" d="M240 205 C232 160 262 128 292 135 C325 142 332 190 326 235 C322 275 305 300 295 330"/>
+            <path class="ear-fold" d="M262 200 C285 190 305 215 298 250 C293 280 275 300 268 325"/>
+            <path class="ear-concha" d="M240 250 C250 235 280 240 282 265 C284 290 265 312 248 308 C236 304 232 270 240 250 Z"/>
+            <ellipse class="ear-canal" cx="247" cy="279" rx="9" ry="13"/>
+
+            <!-- 귀 위로 넘어가는 고리 + 귓바퀴 앞쪽 모듈 -->
+            <path class="dev-hook" d="M358 190 C362 110 290 70 232 98 C204 112 198 160 201 215"/>
+            <rect class="dev" x="186" y="208" width="30" height="80" rx="15"/>
+
+            <!-- 스피커 소리 파동 (귀구멍 방향) -->
+            <g class="waves" aria-hidden="true">
+              <path d="M224.3 253.7 A16 16 0 0 1 224.3 274.3"/>
+              <path d="M231.9 247.3 A26 26 0 0 1 231.9 280.7"/>
+              <path d="M239.6 240.9 A36 36 0 0 1 239.6 287.1"/>
+            </g>
+
+            <!-- 부품 4개: 번호 동그라미 + 이름표 -->
+            <g class="part" data-part="ppg" tabindex="0" role="button" aria-label="PPG optical sensor">
+              <line class="lead" x1="339" y1="331" x2="398" y2="345"/>
+              <circle class="ring" cx="327" cy="329" r="11"/>
+              <circle class="dot" cx="327" cy="329" r="11"/>
+              <text class="num" x="327" y="329">1</text>
+              <text class="name" x="404" y="345">PPG optical sensor</text>
+              <rect class="hit" x="310" y="312" width="236" height="46"/>
+            </g>
+            <g class="part" data-part="imu" tabindex="0" role="button" aria-label="Accelerometer (IMU)">
+              <line class="lead" x1="361" y1="268" x2="398" y2="272"/>
+              <circle class="ring" cx="349" cy="267" r="11"/>
+              <circle class="dot" cx="349" cy="267" r="11"/>
+              <text class="num" x="349" y="267">2</text>
+              <text class="name" x="404" y="272">Accelerometer (IMU)</text>
+              <rect class="hit" x="334" y="250" width="212" height="38"/>
+            </g>
+            <g class="part" data-part="speaker" tabindex="0" role="button" aria-label="Speaker">
+              <line class="lead" x1="189" y1="262" x2="152" y2="262"/>
+              <circle class="ring" cx="201" cy="262" r="11"/>
+              <circle class="dot" cx="201" cy="262" r="11"/>
+              <text class="num" x="201" y="262">3</text>
+              <text class="name" x="146" y="262" text-anchor="end">Speaker</text>
+              <rect class="hit" x="84" y="242" width="132" height="40"/>
+            </g>
+            <g class="part" data-part="power" tabindex="0" role="button" aria-label="Battery and wireless module">
+              <line class="lead" x1="369" y1="210" x2="398" y2="200"/>
+              <circle class="ring" cx="357" cy="213" r="11"/>
+              <circle class="dot" cx="357" cy="213" r="11"/>
+              <text class="num" x="357" y="213">4</text>
+              <text class="name" x="404" y="200">Battery &amp; wireless</text>
+              <rect class="hit" x="342" y="182" width="204" height="46"/>
+            </g>
+          </svg>
+        </div>
+
+        <ul class="legend" id="legend"></ul>
+      </div>
+    </section>
+
+    <!-- 오른쪽: 로그 2개 -->
+    <div class="right">
+      <section class="panel">
+        <h2>Live data log
+          <span class="side">
+            <small id="recCount">0 records</small>
+            <button id="btnCsv" class="btn-small" type="button" disabled>Download CSV</button>
+          </span>
+        </h2>
+        <div class="row-head mono"><span>timestamp</span><span>Biomarker</span><span>Figure</span><span>Status</span></div>
+        <div class="log mono" id="dataLog"><div class="empty">Start the simulation to record a measurement every second.</div></div>
+      </section>
+      <section class="panel">
+        <h2>Voice guidance log
+          <span class="side">
+            <small id="nextInfo">Next announcement: --</small>
+            <button id="btnLoad" class="btn-small" type="button">Load CSV</button>
+            <input id="fileInstr" type="file" accept=".csv,text/csv" hidden>
+          </span>
+        </h2>
+        <div class="source" id="instrSource">Loading instruction.csv…</div>
+        <div class="log" id="voiceLog"><div class="empty">No announcements yet.</div></div>
+      </section>
+    </div>
+  </main>
+</div>
+<div id="tooltip" role="tooltip"></div>
+
+<script>
+'use strict';
+
+/* =====================================================================
+ * 1. 설정
+ *    안내 문구는 코드에 적지 않고 instruction.csv 를 그대로 읽어서 씁니다.
+ *    열 이름(biomarker, Status, Instruction)만 같으면 다른 CSV로 바꿔도 됩니다.
+ *    Instruction 안의 {time} 은 안내할 때 실제 시각으로 바뀝니다.
+ * ===================================================================== */
+const INSTRUCTION_CSV_URL = 'instruction.csv';   // 안내 문구 CSV 위치 (이 HTML 파일 기준 경로)
+const INSTRUCTION_COLUMNS = ['biomarker', 'Status', 'Instruction'];
+
+/* CSV 안의 값과 맞춰야 하는 키. CSV를 바꾸면 여기 값도 그 CSV에 맞게 바꿀 것 */
+const NORMAL_STATUS = 'Normal';                              // 측정값이 정상일 때 기록할 Status
+const TIME_ANNOUNCEMENT = { biomarker: 'TIME', status: 'Info' }; // 시간 안내 문구를 찾을 때 쓰는 키
+
+const VOICE_LANG = 'en-US';           // 음성 언어
+const MEASURE_INTERVAL_MS = 1000;     // 측정 주기
+const TIME_ANNOUNCE_INTERVAL_S = 10;  // 시간 안내 간격(초). 시계의 0, 10, 20…초에 맞춰 안내
+const MAX_LOG_ROWS = 400;             // 화면에 남겨 둘 로그 줄 수 (메모리의 기록은 전부 유지)
+const CSV_HEADER = ['timestamp', 'Biomarker', 'Figure', 'Status'];
+
+/* 부품 설명 (목록·툴팁에 공통으로 사용) */
+const PARTS = {
+  ppg:     { no: 1, name: 'PPG optical sensor', short: 'Heart rate and SpO2',
+             detail: 'Shines light onto the skin of the ear and reads how much is reflected to track blood flow, then calculates heart rate and oxygen saturation (SpO2).' },
+  imu:     { no: 2, name: 'Accelerometer (IMU)', short: 'Movement → actigraphy',
+             detail: 'Measures head and body movement to record activity. This record (actigraphy) is used to analyze sleep and activity patterns.' },
+  speaker: { no: 3, name: 'Speaker', short: 'Voice guidance output',
+             detail: 'An open-ear speaker aimed at the ear canal. It does not block the ear, so the wearer still hears their surroundings.' },
+  power:   { no: 4, name: 'Battery & wireless', short: 'Power and data transfer',
+             detail: 'Sits in the main body behind the ear. Powers the device and sends measurement data wirelessly.' },
+};
+/* 어떤 측정값이 어떤 부품에서 나오는지 */
+const BIOMARKER_PART = { HR: 'ppg', SpO2: 'ppg', Activity: 'imu' };
+
+/* =====================================================================
+ * 2. 상태
+ * ===================================================================== */
+let INSTRUCTIONS = [];     // instruction.csv 에서 읽은 행: {biomarker, Status, Instruction}
+const records = [];        // A_data.csv 형식의 기록: {timestamp, Biomarker, Figure, Status}
+const lastStatus = {};     // 바이오마커별 직전 상태 (상태가 바뀔 때만 안내하기 위함)
+let running = false;
+let measureTimer = null;
+let lastTimeSlot = null;   // 마지막으로 시간 안내를 한 구간 번호
+let activityLevel = 12;    // 활동량은 직전 값에서 조금씩 변하게
+let speakingCount = 0;     // 재생 중이거나 대기 중인 음성 수
+const liveUtterances = new Set(); // 일부 브라우저에서 재생 도중 음성 객체가 사라지는 것을 막기 위해 보관
+
+const $ = (id) => document.getElementById(id);
+const el = {
+  start: $('btnStart'), csv: $('btnCsv'), dataLog: $('dataLog'), voiceLog: $('voiceLog'),
+  recCount: $('recCount'), load: $('btnLoad'), file: $('fileInstr'), source: $('instrSource'), nextInfo: $('nextInfo'), svg: $('deviceSvg'), legend: $('legend'),
+  tooltip: $('tooltip'),
+};
+
+/* =====================================================================
+ * 3. 도우미 함수
+ * ===================================================================== */
+const pad = (n) => String(n).padStart(2, '0');
+const randInt = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
+
+/* A_data.csv 의 timestamp 형식 (1초 단위 측정이라 초까지 기록) */
+function formatTimestamp(d) {
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+}
+function formatClock(d) {
+  return `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+}
+/* 음성용 시각: "3:05 PM and 10 seconds" (10초마다 안내하므로 초까지 말함) */
+function timeText(d) {
+  const h = d.getHours();
+  const s = d.getSeconds();
+  const base = `${h % 12 === 0 ? 12 : h % 12}:${pad(d.getMinutes())} ${h < 12 ? 'AM' : 'PM'}`;
+  return s === 0 ? base : `${base} and ${s} ${s === 1 ? 'second' : 'seconds'}`;
+}
+function fillTemplate(text, vars) {
+  return text.replace(/\{(\w+)\}/g, (m, key) => (key in vars ? vars[key] : m));
+}
+/* 로그 영역: 사용자가 위로 올려 보고 있지 않을 때만 맨 아래로 자동 스크롤 */
+function appendToLog(container, node) {
+  const empty = container.querySelector('.empty');
+  if (empty) empty.remove();
+  const stick = container.scrollHeight - container.scrollTop - container.clientHeight < 40;
+  container.appendChild(node);
+  while (container.children.length > MAX_LOG_ROWS) container.firstElementChild.remove();
+  if (stick) container.scrollTop = container.scrollHeight;
+}
+function span(text, className) {
+  const s = document.createElement('span');
+  s.textContent = text;
+  if (className) s.className = className;
+  return s;
+}
+
+/* =====================================================================
+ * 4. 측정 → 기록
+ * ===================================================================== */
+
+/* 상태 판정. 아직 기준표가 없어서 지금은 전부 정상. 기준이 정리되면 여기만 채우면 됨 */
+function judgeStatus(biomarker, figure) {
+  return NORMAL_STATUS;
+}
+
+/* 측정값 한 건을 A_data.csv 형식으로 저장하고, 문제가 생겼으면 안내 */
+function record(biomarker, figure, now) {
+  const status = judgeStatus(biomarker, figure);
+  const rec = { timestamp: formatTimestamp(now), Biomarker: biomarker, Figure: figure, Status: status };
+  records.push(rec);
+  renderRecord(rec);
+  highlightPart(BIOMARKER_PART[biomarker]);
+
+  // 상태가 정상이 아닌 값으로 바뀐 순간에만 안내 (매초 반복 안내 방지)
+  if (status !== NORMAL_STATUS && lastStatus[biomarker] !== status) announce(biomarker, status);
+  lastStatus[biomarker] = status;
+}
+
+/* 1초마다 실행: 더미 측정값 생성 */
+function measure() {
+  const now = new Date();
+
+  activityLevel = Math.max(0, Math.min(60, activityLevel + randInt(-6, 6)));
+  record('HR', randInt(60, 80), now);
+  record('SpO2', randInt(96, 99), now);
+  record('Activity', activityLevel, now);
+
+  checkTimeAnnouncement(now);
+  updateNextInfo(now);
+}
+
+function renderRecord(rec) {
+  const normal = rec.Status === NORMAL_STATUS;
+  const row = document.createElement('div');
+  row.className = 'row';
+  row.append(span(rec.timestamp, 'ts'), span(rec.Biomarker), span(String(rec.Figure)), span(rec.Status, normal ? 'st-normal' : 'st-alert'));
+  appendToLog(el.dataLog, row);
+  el.recCount.textContent = `${records.length.toLocaleString('en-US')} records`;
+  el.csv.disabled = false;
+
+  const tile = $('tile' + rec.Biomarker);
+  if (tile) {
+    tile.querySelector('b').textContent = rec.Figure;
+    tile.classList.toggle('danger', !normal);
+  }
+}
+
+/* =====================================================================
+ * 5. 안내: 문구 조회 + 음성 출력 (모든 안내는 반드시 이 함수를 거침)
+ * ===================================================================== */
+function announce(biomarker, status, now = new Date()) {
+  const found = INSTRUCTIONS.find((r) => r.biomarker === biomarker && r.Status === status);
+
+  if (!found) {
+    renderVoice(now, biomarker, status, 'No matching row in the instruction CSV.', true);
+    return null;
+  }
+  const text = fillTemplate(found.Instruction, { time: timeText(now) });
+  renderVoice(now, biomarker, status, text, false);
+  speak(text);
+  return text;
+}
+
+function renderVoice(now, biomarker, status, text, missing) {
+  const item = document.createElement('div');
+  item.className = 'voice' + (missing ? ' is-none' : '');
+  const meta = document.createElement('div');
+  meta.className = 'meta';
+  meta.append(span(formatClock(now), 'mono'), span(`${biomarker} · ${status}`, 'tag'));
+  const say = document.createElement('div');
+  say.className = 'say';
+  say.textContent = text;
+  item.append(meta, say);
+  appendToLog(el.voiceLog, item);
+}
+
+/* 브라우저 음성 합성으로 읽기 */
+function speak(text) {
+  const supported = 'speechSynthesis' in window && 'SpeechSynthesisUtterance' in window;
+  let finished = false;
+  let utter = null;
+  const done = () => {
+    if (finished) return;
+    finished = true;
+    if (utter) liveUtterances.delete(utter);
+    speakingCount = Math.max(0, speakingCount - 1);
+    el.svg.classList.toggle('speaking', speakingCount > 0);
+  };
+
+  speakingCount += 1;
+  el.svg.classList.add('speaking');
+
+  if (!supported) {
+    // 음성을 지원하지 않는 브라우저: 파동 애니메이션만 잠깐 보여 줌
+    setTimeout(done, 1200 + text.length * 60);
+    return;
+  }
+  utter = new SpeechSynthesisUtterance(text);
+  utter.lang = VOICE_LANG;
+  const voice = pickVoice();
+  if (voice) utter.voice = voice;
+  utter.onend = done;
+  utter.onerror = done;
+  liveUtterances.add(utter);
+  window.speechSynthesis.speak(utter);
+  // 종료 이벤트가 오지 않는 브라우저에 대비한 안전장치
+  setTimeout(done, 4000 + text.length * 120);
+}
+
+/* 영어 음성 고르기 (목록이 늦게 준비되는 브라우저가 있어 말할 때마다 다시 찾음) */
+function pickVoice() {
+  const voices = window.speechSynthesis.getVoices();
+  return voices.find((v) => v.lang === VOICE_LANG)
+      || voices.find((v) => v.lang && v.lang.toLowerCase().startsWith('en'))
+      || null;
+}
+if ('speechSynthesis' in window) window.speechSynthesis.getVoices(); // 음성 목록 미리 불러오기
+
+/* =====================================================================
+ * 6. 시간 안내 타이머
+ *    시계 기준으로 10초마다 안내 (…:10, …:20, …:30)
+ * ===================================================================== */
+const TIME_INTERVAL_MS = TIME_ANNOUNCE_INTERVAL_S * 1000;
+const currentSlot = (now) => Math.floor(now.getTime() / TIME_INTERVAL_MS);
+
+function checkTimeAnnouncement(now) {
+  const slot = currentSlot(now);
+  if (slot !== lastTimeSlot) {
+    lastTimeSlot = slot;
+    // 타이머가 조금 늦게 돌아도 정확히 10초 단위 시각으로 안내
+    announce(TIME_ANNOUNCEMENT.biomarker, TIME_ANNOUNCEMENT.status, new Date(slot * TIME_INTERVAL_MS));
+  }
+}
+
+function updateNextInfo(now) {
+  if (!running) {
+    el.nextInfo.textContent = 'Next announcement: --';
+    return;
+  }
+  const left = Math.ceil((TIME_INTERVAL_MS - (now.getTime() % TIME_INTERVAL_MS)) / 1000);
+  el.nextInfo.textContent = `Next announcement in ${left}s`;
+}
+
+/* =====================================================================
+ * 7. 시작 / 정지
+ * ===================================================================== */
+function start() {
+  const now = new Date();
+  running = true;
+  lastTimeSlot = currentSlot(now);
+  el.start.textContent = '■ Stop';
+  el.start.classList.add('running');
+  // 사용자의 클릭 직후에 바로 한 번 안내 (브라우저의 소리 재생 제한도 이때 풀림)
+  announce(TIME_ANNOUNCEMENT.biomarker, TIME_ANNOUNCEMENT.status, now);
+  measure();
+  measureTimer = setInterval(measure, MEASURE_INTERVAL_MS);
+}
+
+function stop() {
+  running = false;
+  clearInterval(measureTimer);
+  measureTimer = null;
+  if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+  el.start.textContent = '▶ Start simulation';
+  el.start.classList.remove('running');
+  updateNextInfo(new Date());
+}
+
+el.start.addEventListener('click', () => (running ? stop() : start()));
+
+/* =====================================================================
+ * 8. CSV 다운로드 (A_data.csv 와 같은 열 구성)
+ * ===================================================================== */
+function csvCell(value) {
+  const s = String(value);
+  return /[",\r\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+}
+function buildCsv() {
+  const lines = [CSV_HEADER.join(',')];
+  for (const r of records) lines.push(CSV_HEADER.map((key) => csvCell(r[key])).join(','));
+  return '﻿' + lines.join('\r\n') + '\r\n'; // 엑셀에서 한글이 깨지지 않도록 BOM 추가
+}
+el.csv.addEventListener('click', () => {
+  const d = new Date();
+  const name = `A_data_${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}_${pad(d.getHours())}${pad(d.getMinutes())}${pad(d.getSeconds())}.csv`;
+  const url = URL.createObjectURL(new Blob([buildCsv()], { type: 'text/csv;charset=utf-8' }));
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = name;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+});
+
+/* =====================================================================
+ * 9. instruction.csv 읽기
+ * ===================================================================== */
+
+/* CSV 글자를 행 배열로 변환 (따옴표, 따옴표 안의 쉼표·줄바꿈, BOM 처리) */
+function parseCsv(text) {
+  const rows = [];
+  let row = [];
+  let cell = '';
+  let quoted = false;
+  const src = text.replace(/^\uFEFF/, '');
+  for (let i = 0; i < src.length; i++) {
+    const c = src[i];
+    if (quoted) {
+      if (c === '"' && src[i + 1] === '"') { cell += '"'; i++; }
+      else if (c === '"') quoted = false;
+      else cell += c;
+    } else if (c === '"') quoted = true;
+    else if (c === ',') { row.push(cell); cell = ''; }
+    else if (c === '\n' || c === '\r') {
+      if (c === '\r' && src[i + 1] === '\n') i++;
+      row.push(cell); cell = '';
+      rows.push(row); row = [];
+    } else cell += c;
+  }
+  if (cell !== '' || row.length) { row.push(cell); rows.push(row); }
+  return rows.filter((r) => r.some((v) => v.trim() !== ''));
+}
+
+/* CSV 글자 → INSTRUCTIONS. 열 순서는 상관없고 이름만 맞으면 됨(대소문자 무시) */
+function loadInstructions(text, sourceName) {
+  const rows = parseCsv(text);
+  const header = (rows.shift() || []).map((h) => h.trim().toLowerCase());
+  const index = INSTRUCTION_COLUMNS.map((col) => header.indexOf(col.toLowerCase()));
+  const missing = INSTRUCTION_COLUMNS.filter((col, i) => index[i] < 0);
+  if (missing.length) throw new Error(`missing column: ${missing.join(', ')}`);
+
+  INSTRUCTIONS = rows.map((r) => ({
+    biomarker: (r[index[0]] || '').trim(),
+    Status: (r[index[1]] || '').trim(),
+    Instruction: (r[index[2]] || '').trim(),
+  }));
+  el.source.classList.remove('error');
+  el.source.textContent = `Source: ${sourceName} · ${INSTRUCTIONS.length} ${INSTRUCTIONS.length === 1 ? 'instruction' : 'instructions'}`;
+  el.start.disabled = false;
+}
+
+function showInstructionError(message) {
+  el.source.classList.add('error');
+  el.source.textContent = message;
+}
+
+/* 페이지를 열 때 같은 폴더의 CSV를 자동으로 읽음.
+   파일을 더블클릭으로 연 경우(file://)에는 브라우저가 막으므로 "Load CSV" 버튼으로 직접 고름 */
+fetch(INSTRUCTION_CSV_URL, { cache: 'no-store' })
+  .then((res) => {
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return res.text();
+  })
+  .then((text) => loadInstructions(text, INSTRUCTION_CSV_URL))
+  .catch((err) => {
+    if (INSTRUCTIONS.length) return; // 그 사이에 사용자가 직접 파일을 고른 경우
+    showInstructionError(location.protocol === 'file:'
+      ? 'This page was opened as a local file, so the browser blocked automatic loading. Click "Load CSV" and choose instruction.csv.'
+      : `Could not load ${INSTRUCTION_CSV_URL} (${err.message}). Click "Load CSV" to choose it.`);
+  });
+
+el.load.addEventListener('click', () => el.file.click());
+el.file.addEventListener('change', async () => {
+  const file = el.file.files[0];
+  if (!file) return;
+  try {
+    loadInstructions(await file.text(), file.name);
+  } catch (err) {
+    showInstructionError(`Could not read ${file.name} (${err.message}). Expected columns: ${INSTRUCTION_COLUMNS.join(', ')}.`);
+  }
+  el.file.value = ''; // 같은 파일을 다시 골라도 반응하게
+});
+
+/* =====================================================================
+ * 10. 기기 모형: 하이라이트, 부품 목록, 툴팁
+ * ===================================================================== */
+const highlightTimers = {};
+function highlightPart(key) {
+  if (!key) return;
+  const targets = document.querySelectorAll(`[data-part="${key}"]`);
+  targets.forEach((t) => t.classList.remove('active'));
+  void el.svg.getBoundingClientRect(); // 애니메이션을 처음부터 다시 재생시키기 위한 강제 갱신
+  targets.forEach((t) => t.classList.add('active'));
+  clearTimeout(highlightTimers[key]);
+  highlightTimers[key] = setTimeout(() => targets.forEach((t) => t.classList.remove('active')), 550);
+}
+
+/* 부품 목록(이름 + 짧은 설명) 만들기 */
+for (const [key, p] of Object.entries(PARTS)) {
+  const li = document.createElement('li');
+  li.dataset.part = key;
+  li.tabIndex = 0;
+  const text = document.createElement('div');
+  const name = document.createElement('b');
+  name.textContent = p.name;
+  text.append(name, span(p.short));
+  li.append(span(String(p.no), 'n'), text);
+  el.legend.appendChild(li);
+}
+
+let tooltipOwner = null;
+function showTooltip(target) {
+  const p = PARTS[target.dataset.part];
+  if (!p) return;
+  tooltipOwner = target;
+  el.tooltip.innerHTML = '';
+  const title = document.createElement('b');
+  title.textContent = `${p.no}. ${p.name} — ${p.short}`;
+  el.tooltip.append(title, document.createTextNode(p.detail));
+
+  // 부품 동그라미(또는 목록 항목) 바로 아래에, 화면 밖으로 나가지 않게 배치
+  const anchor = target.querySelector('.dot') || target;
+  const a = anchor.getBoundingClientRect();
+  const t = el.tooltip.getBoundingClientRect();
+  let left = a.left + a.width / 2 - t.width / 2;
+  left = Math.max(8, Math.min(left, window.innerWidth - t.width - 8));
+  let top = a.bottom + 10;
+  if (top + t.height > window.innerHeight - 8) top = a.top - t.height - 10;
+  el.tooltip.style.left = `${left}px`;
+  el.tooltip.style.top = `${Math.max(8, top)}px`;
+  el.tooltip.classList.add('show');
+}
+function hideTooltip() {
+  tooltipOwner = null;
+  el.tooltip.classList.remove('show');
+}
+document.querySelectorAll('[data-part]').forEach((target) => {
+  target.addEventListener('mouseenter', () => showTooltip(target));
+  target.addEventListener('mouseleave', hideTooltip);
+  target.addEventListener('focus', () => showTooltip(target));
+  target.addEventListener('blur', hideTooltip);
+  // 탭(터치): 누르면 열리고 같은 곳을 다시 누르면 닫힘
+  target.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (tooltipOwner === target && e.pointerType !== 'mouse') hideTooltip();
+    else showTooltip(target);
+  });
+});
+document.addEventListener('click', hideTooltip);
+window.addEventListener('scroll', hideTooltip, true);
+window.addEventListener('resize', hideTooltip);
+</script>
+</body>
+</html>
