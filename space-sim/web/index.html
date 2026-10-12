@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>우주 통신 시뮬레이터</title>
+<style>
+  * { box-sizing: border-box; }
+  body { font-family: -apple-system, system-ui, sans-serif; margin: 0; padding: 20px; background: #f5f6f8; color: #222; }
+  .top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+  .top h2 { margin: 0; }
+  .clock { text-align: right; }
+  #clock { font-size: 30px; font-weight: 600; font-variant-numeric: tabular-nums; }
+  #date { color: #666; font-size: 13px; }
+
+  .layout { display: grid; gap: 16px; }
+  .mars, .bottom { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: start; }
+  .col { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+  .card { background: #fff; border: 1px solid #e3e5e8; border-radius: 10px; padding: 14px 16px; min-width: 0; }
+  .card h3 { margin: 0 0 10px; font-size: 16px; }
+
+  .row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+  button { padding: 5px 12px; border: 1px solid #cfd3d8; border-radius: 6px; background: #fff; cursor: pointer; font-size: 13px; }
+  button:hover { background: #f0f2f5; }
+  button.primary { background: #2563eb; border-color: #2563eb; color: #fff; }
+  button.primary:hover { background: #1d4fd6; }
+
+  ul { padding-left: 18px; margin: 0; }
+  li { margin: 4px 0; font-size: 14px; }
+  .log { max-height: 260px; overflow: auto; }
+  .sub { color: #888; font-size: 12px; margin: 4px 0; }
+  .scroll { max-height: 260px; overflow: auto; border: 1px solid #eee; border-radius: 6px; }
+  table { border-collapse: collapse; font-size: 13px; width: 100%; }
+  table th, table td { text-align: left; padding: 4px 8px; border-bottom: 1px solid #f0f0f0; white-space: nowrap; }
+  table th { position: sticky; top: 0; background: #fafafa; }
+
+  @media (max-width: 860px) {
+    .mars, .bottom { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<header class="top">
+  <h2 id="title"></h2>
+  <div class="clock">
+    <div id="clock"></div>
+    <div id="date"></div>
+  </div>
+</header>
+
+<main class="layout">
+  <!-- 화성 창 전용 -->
+  <section id="marsPanel" class="mars" style="display:none">
+    <div class="col">
+      <div class="card">
+        <h3>원본 (A_hot)</h3>
+        <div class="row">
+          <input type="file" id="hotInput" accept=".csv">
+          <button id="playBtn">재생 시작</button>
+          <button id="resetBtn">초기화</button>
+        </div>
+        <p class="sub" id="hotStatus"></p>
+        <div class="scroll"><table id="hotTable"></table></div>
+      </div>
+
+      <div class="card">
+        <h3>요약 (A_cold · Biomarker 기준 groupby)</h3>
+        <div class="scroll"><table id="coldTable"></table></div>
+        <div class="row" style="margin-top:10px">
+          <button id="flushBtn">A_cold 지금 발송 (테스트)</button>
+          <span class="sub" id="sendInfo"></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="col">
+      <div class="card">
+        <h3>용량 비교</h3>
+        <div class="scroll"><table id="sizeTable"></table></div>
+      </div>
+
+      <div class="card">
+        <h3>이상치 (A_priority)</h3>
+        <p class="sub" id="priorityStatus"></p>
+        <div class="scroll" style="margin-top:8px"><table id="prioTable"></table></div>
+        <div class="row" style="margin-top:8px">
+          <button id="priorityBtn" class="primary">지금 발송 (테스트)</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>변환 로그</h3>
+        <ul id="convLog" class="log"></ul>
+      </div>
+    </div>
+  </section>
+
+  <div class="bottom">
+    <!-- 전송 기록 (양쪽 창 공통) -->
+    <section class="card">
+      <div class="row" style="justify-content:space-between">
+        <h3 style="margin:0">전송 기록 (blocks.csv)</h3>
+        <button id="blockDownload">다운로드</button>
+      </div>
+      <div class="scroll" style="margin-top:10px"><table id="blockTable"></table></div>
+    </section>
+
+    <!-- 받은 기록 (양쪽 창 공통) -->
+    <section class="card">
+      <h3>받은 기록</h3>
+      <ul id="inbox" class="log"></ul>
+    </section>
+  </div>
+</main>
+
+<script type="module" src="app.js"></script>
+</body>
+</html>
