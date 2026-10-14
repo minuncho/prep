@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>My calendar</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #0f1d30;
+    --navy-bar: #15263f;
+    --card: #fbfcfe;
+    --tile: #edf2f9;
+    --tile-line: #d3deec;
+    --ink: #1c2b40;
+    --muted: #6f7c8d;
+    --faint: #98a3b1;
+    --blue: #3d6a9e;
+    --sky: #a9c8ea;
+    --critical: #c9505a;
+    --warn: #c07a2c;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--navy);
+    color: var(--ink);
+    font-family: "Poppins", system-ui, sans-serif;
+    font-weight: 300;
+    font-size: 14px;
+  }
+  button, select { font: inherit; color: inherit; }
+
+  /* 상단 바 */
+  .topbar {
+    height: 80px;
+    background: var(--navy-bar);
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 0 48px 0 184px;
+  }
+  .pill {
+    height: 38px;
+    padding: 0 12px;
+    border: 1px solid var(--tile-line);
+    border-radius: 12px;
+    background: var(--tile);
+    font-size: 15px;
+    font-weight: 400;
+    cursor: pointer;
+  }
+  .pill.active { background: var(--blue); border-color: var(--blue); color: #fff; }
+  .topbar .spacer { flex: 1; }
+  .clock { color: var(--sky); font-size: 13px; font-weight: 400; white-space: nowrap; }
+  select.pill { width: 198px; font-size: 12px; font-weight: 500; }
+
+  .page { max-width: 1440px; margin: 0 auto; padding: 0 48px 58px; }
+  .page-title {
+    position: relative;
+    margin: 0;
+    padding: 30px 28px 52px;
+    color: #fff;
+    font-size: 34px;
+    font-weight: 300;
+  }
+  .page-title::after {
+    content: "✦";
+    position: absolute;
+    right: 34px;
+    top: 40px;
+    color: var(--sky);
+    font-size: 16px;
+  }
+
+  .card {
+    background: var(--card);
+    border-radius: 16px;
+    padding: 26px 24px 24px;
+  }
+  .card h2 { margin: 0; font-size: 20px; font-weight: 600; }
+  .card .sub { margin: 14px 0 0; color: var(--muted); font-size: 14px; }
+
+  /* 주간 캘린더 */
+  .range { display: flex; align-items: center; gap: 28px; margin-top: 20px; }
+  .range .label { font-size: 20px; }
+  .range button { border: 0; background: none; padding: 0 6px; font-size: 18px; cursor: pointer; }
+  .filters { display: flex; align-items: center; gap: 8px; margin: 20px 0 14px; flex-wrap: wrap; }
+  .chip {
+    height: 32px;
+    padding: 0 12px;
+    min-width: 50px;
+    border: 0;
+    border-radius: 12px;
+    background: var(--tile);
+    color: var(--muted);
+    font-size: 13px;
+    text-align: left;
+    cursor: pointer;
+  }
+  .chip.active { color: var(--ink); font-weight: 400; }
+  .chip .dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 5px; background: #6e7f99; }
+  .chip.active .dot { background: var(--ink); }
+  .crew { border: 0; background: none; color: var(--muted); font-size: 13px; cursor: pointer; }
+
+  .week { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 8px; }
+  .day {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    min-height: 246px;
+    padding: 14px 10px 16px;
+    border: 2px solid transparent;
+    border-radius: 12px;
+    background: var(--tile);
+    text-align: left;
+    cursor: pointer;
+  }
+  .day.selected { border-color: var(--tile-line); background: #f1f5fb; }
+  .day .dow { font-size: 14px; }
+  .day .daynum { margin-top: 12px; color: var(--faint); font-size: 12px; }
+  .day .sleep { margin: 20px 8px 0; color: var(--muted); }
+  .day .sleep .when { font-size: 12px; }
+  .day .sleep .value { font-size: 14px; }
+  .day .sleep.alert .value { color: var(--critical); }
+  .day .sleep.warn .value { color: var(--warn); }
+  .day.selected .sleep .when { color: var(--ink); }
+  .day ul { list-style: none; margin: 30px 8px 0; padding: 0; }
+  .day li { margin-bottom: 16px; font-size: 12px; overflow-wrap: anywhere; }
+  .day li:last-child { margin-bottom: 0; }
+  .day .empty { color: var(--faint); }
+
+  /* 하단 두 카드 */
+  .bottom { display: grid; grid-template-columns: 884fr 436fr; gap: 24px; margin-top: 28px; }
+  table { width: 100%; margin-top: 12px; border-collapse: collapse; }
+  th {
+    padding: 8px 0;
+    color: var(--muted);
+    font-size: 11px;
+    font-weight: 500;
+    text-align: left;
+    text-transform: uppercase;
+  }
+  td { padding: 11px 0; font-size: 15px; }
+  td:first-child { width: 158px; color: var(--faint); font-size: 13px; }
+  td:last-child { width: 300px; }
+  td.alert { color: var(--critical); }
+  td.warn { color: var(--warn); }
+  .bubble { margin-top: 14px; padding: 16px 16px 26px; border-radius: 12px; background: var(--tile); font-size: 15px; }
+  .bubble .when { margin-bottom: 4px; color: var(--muted); font-size: 12px; }
+  .cta {
+    width: 100%;
+    height: 44px;
+    margin-top: 14px;
+    border: 0;
+    border-radius: 12px;
+    background: var(--blue);
+    color: #fff;
+    font-size: 15px;
+    cursor: pointer;
+  }
+
+  @media (max-width: 1000px) {
+    .topbar { padding-left: 48px; }
+    .week { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .bottom { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+  <header class="topbar">
+    <button class="pill active">My calendar</button>
+    <button class="pill">Health Instruction</button>
+    <span class="spacer"></span>
+    <span class="clock" id="utc"></span>
+    <span class="clock" id="sol"></span>
+    <select class="pill" aria-label="Location and role">
+      <option>SPACE / Astronaut</option>
+    </select>
+    <button class="pill">My profile</button>
+  </header>
+
+  <main class="page">
+    <h1 class="page-title">My calendar</h1>
+
+    <section class="card">
+      <h2>Weekly Calendar</h2>
+      <div class="range">
+        <span class="label" id="range"></span>
+        <span>
+          <button id="prev" aria-label="Previous week">‹</button>
+          <button id="next" aria-label="Next week">›</button>
+        </span>
+      </div>
+      <div class="filters">
+        <button class="chip active" data-filter="all">All</button>
+        <button class="chip" data-filter="mission"><span class="dot"></span>Mission</button>
+        <button class="chip" data-filter="biomarkers"><span class="dot"></span>Biomarkers</button>
+        <button class="chip" data-filter="meals"><span class="dot"></span>Meals</button>
+        <button class="chip" data-filter="alerts">Alerts only</button>
+        <select class="crew" id="crew" aria-label="Crew member"></select>
+      </div>
+      <div class="week" id="week"></div>
+    </section>
+
+    <div class="bottom">
+      <section class="card">
+        <h2>Data Log</h2>
+        <p class="sub" id="log-sub"></p>
+        <table>
+          <thead><tr><th>Mission time</th><th>Health check</th><th>Value / Status</th></tr></thead>
+          <tbody id="log"></tbody>
+        </table>
+      </section>
+      <section class="card">
+        <h2>Recent Conversation</h2>
+        <p class="sub">Ground doctor · 1:1 chat</p>
+        <div class="bubble">
+          <div class="when">DAY 004 12:25</div>
+          I’ve received your record. Please tell me how you’re feeling now.
+        </div>
+        <button class="cta">Open conversation</button>
+      </section>
+    </div>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
