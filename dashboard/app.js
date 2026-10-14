@@ -3,14 +3,6 @@
 const DOW = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
 const MONTHS = ["January", "February", "March", "April", "May", "June", "July",
   "August", "September", "October", "November", "December"];
-const HEALTH_CHECKS = {
-  "Self-reported sleep quality": { label: "How well you slept", unit: "" },
-  "TST": { label: "Time asleep", unit: " h" },
-  "SL": { label: "Time to fall asleep", unit: " min" },
-  "SE": { label: "Sleep efficiency", unit: "%" },
-  "WASO": { label: "Awake during the night", unit: " min" },
-};
-
 const state = {
   events: [],
   biomarkers: [],
@@ -118,7 +110,7 @@ function render() {
 }
 
 async function init() {
-  renderClock();
+  renderTopbar("calendar");
 
   try {
     [state.events, state.biomarkers] = await Promise.all([loadCsv(EVENTS_CSV), loadCsv(BIOMARKER_CSV)]);

@@ -7,20 +7,10 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=2">
+<link rel="stylesheet" href="style.css?v=3">
 </head>
 <body>
-  <header class="topbar">
-    <a class="pill active" href="index.html">My calendar</a>
-    <button class="pill">Health Instruction</button>
-    <span class="spacer"></span>
-    <span class="clock" id="utc"></span>
-    <span class="clock" id="sol"></span>
-    <select class="pill" aria-label="Location and role">
-      <option>SPACE / Astronaut</option>
-    </select>
-    <button class="pill">My profile</button>
-  </header>
+  <header class="topbar" id="topbar"></header>
 
   <main class="page">
     <h1 class="page-title">A conversation with your doctor.</h1>
@@ -39,7 +29,7 @@
           <div class="muted" id="shared-when"></div>
           <div id="shared-value"></div>
         </div>
-        <button class="cta">View shared record</button>
+        <a class="cta" href="daily.html">View shared record</a>
         <p class="hint">Your messages stay saved here while the connection is delayed.</p>
       </aside>
 
@@ -62,7 +52,7 @@
     </div>
   </main>
 
-  <script src="common.js?v=2"></script>
-  <script src="conversation.js?v=2"></script>
+  <script src="common.js?v=3"></script>
+  <script src="conversation.js?v=3"></script>
 </body>
 </html>

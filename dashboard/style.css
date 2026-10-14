@@ -59,6 +59,8 @@ select.pill { width: 198px; font-size: 12px; font-weight: 500; }
   font-size: 34px;
   font-weight: 300;
 }
+.page-title.with-sub { padding-bottom: 6px; }
+.page-sub { margin: 0; padding: 0 28px 26px; color: var(--sky); font-size: 14px; }
 .page-title::after {
   content: "✦";
   position: absolute;
@@ -210,4 +212,84 @@ td.warn { color: var(--warn); }
   .msg.you { margin-left: 20%; margin-right: 0; }
   .msg.doctor { width: 80%; }
   .composer { padding-right: 24px; }
+}
+
+/* 여러 화면이 같이 쓰는 조각 */
+.row-link { display: block; }
+.row-link:hover .name { text-decoration: underline; }
+.facts { margin: 14px 0 0; padding: 0; list-style: none; color: var(--muted); font-size: 14px; }
+.facts li { margin-bottom: 14px; }
+.fab {
+  position: fixed;
+  right: 48px;
+  bottom: 28px;
+  display: flex;
+  align-items: center;
+  height: 48px;
+  padding: 0 20px;
+  border-radius: 12px;
+  background: var(--blue);
+  color: #fff;
+  font-size: 14px;
+}
+.side-card { padding: 22px 24px; }
+.side-card h2 { font-size: 20px; font-weight: 300; }
+.side-card h2 b { margin-right: 12px; font-weight: 300; }
+.side-card h3 { margin: 22px 0 0; font-size: 16px; font-weight: 300; }
+.side-card .cta { margin-top: 6px; }
+
+/* 하루 기록 */
+.banner .tag { min-width: 0; color: var(--critical); }
+.banner .tag.ok { color: var(--ink); }
+.banner .measured { margin-left: 14px; color: var(--muted); }
+.banner h2 { margin-top: 18px; font-size: 24px; font-weight: 300; }
+.daily { display: grid; grid-template-columns: 850fr 470fr; gap: 24px; margin-top: 20px; align-items: start; }
+.daily h2, .helpful h2 { font-size: 22px; font-weight: 300; }
+.check { display: flex; align-items: center; margin-top: 14px; padding: 12px 14px; border-radius: 12px; background: var(--tile); }
+.check .what { flex: 1; font-size: 16px; }
+.check .what small { display: block; margin-top: 2px; color: var(--muted); font-size: 12px; }
+.check .value { width: 96px; font-size: 20px; text-align: right; }
+.check .status { width: 200px; padding-left: 14px; align-self: flex-start; font-size: 13px; }
+.check .status.alert { color: var(--critical); }
+.check .status.warn { color: var(--warn); }
+.next p { margin: 16px 0 0; font-size: 16px; line-height: 1.55; }
+.next .cta { width: 256px; margin-top: 18px; }
+.activities { margin-top: 20px; padding: 18px 20px; }
+.activities h2 { font-size: 18px; font-weight: 300; }
+.activities ul { display: flex; flex-wrap: wrap; gap: 6px 28px; margin: 10px 0 0; padding: 0; list-style: none; color: var(--muted); font-size: 14px; }
+
+/* Health Instruction */
+.search { display: flex; gap: 14px; }
+.search input { flex: 1; height: 50px; padding: 0 16px; border: 0; border-radius: 12px; background: var(--card); font-size: 15px; }
+.search .cta { width: 218px; height: 50px; margin: 0; border: 1px solid var(--sky); }
+.tabs { display: flex; gap: 10px; margin: 20px 0 24px; flex-wrap: wrap; }
+.tabs button { height: 36px; min-width: 66px; padding: 0 14px; border: 0; border-radius: 12px; background: var(--card); color: var(--muted); font-size: 13px; text-align: left; cursor: pointer; }
+.tabs button.active { color: var(--ink); font-weight: 400; }
+.instruction { display: grid; grid-template-columns: 328px minmax(0, 1fr); gap: 24px; align-items: start; padding-bottom: 60px; }
+.helpful { padding: 24px; }
+.item { display: block; margin-top: 16px; padding: 14px 16px; border-radius: 12px; background: var(--tile); }
+.item .kind { font-size: 12px; }
+.item .name { margin-top: 4px; font-size: 19px; }
+.item .name.alert { color: var(--critical); }
+.item .name.warn { color: var(--warn); }
+.item .body { margin-top: 6px; color: var(--muted); font-size: 14px; line-height: 1.5; }
+.item .source { margin-top: 6px; color: var(--faint); font-size: 11px; }
+.helpful .none { margin: 16px 0 0; color: var(--muted); }
+
+/* My profile */
+.profile { display: grid; grid-template-columns: 370px minmax(0, 1fr); gap: 24px; align-items: start; padding-bottom: 60px; }
+.profile .stack { display: grid; gap: 24px; }
+.profile .side-card p { margin: 12px 0 0; color: var(--muted); font-size: 14px; line-height: 1.5; }
+.profile .side-card .cta { width: 270px; margin-top: 14px; }
+.info { margin: 10px 0 0; }
+.info div { display: flex; padding: 13px 0; font-size: 14px; }
+.info dt { width: 270px; color: var(--muted); }
+.info dd { margin: 0; font-weight: 500; }
+.records a { display: block; margin-top: 16px; font-size: 14px; }
+.records a b { font-weight: 500; }
+.records a small { display: block; margin-top: 4px; color: var(--muted); font-size: 12px; }
+
+@media (max-width: 1000px) {
+  .daily, .instruction, .profile { grid-template-columns: 1fr; }
+  .check .status { width: 110px; }
 }

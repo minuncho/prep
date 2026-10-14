@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Daily records</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css?v=3">
+</head>
+<body>
+  <header class="topbar" id="topbar"></header>
+
+  <main class="page">
+    <h1 class="page-title with-sub">Let’s look at your day.</h1>
+    <p class="page-sub" id="date"></p>
+
+    <section class="card banner">
+      <span class="tag" id="banner-tag"></span><span class="measured" id="banner-measured"></span>
+      <h2 id="banner-title"></h2>
+      <p class="sub" id="banner-sub"></p>
+    </section>
+
+    <div class="daily">
+      <div>
+        <section class="card">
+          <h2>Your health checks</h2>
+          <p class="sub">Every record includes its measurement time.</p>
+          <div id="checks"></div>
+        </section>
+        <section class="card activities">
+          <h2>Your activities</h2>
+          <ul id="activities"></ul>
+        </section>
+      </div>
+      <section class="card next">
+        <h2>What to do next</h2>
+        <p id="next"></p>
+        <a class="cta" href="conversation.html">Message my doctor</a>
+      </section>
+    </div>
+  </main>
+
+  <script src="common.js?v=3"></script>
+  <script src="daily.js?v=3"></script>
+</body>
+</html>

@@ -47,8 +47,7 @@ function renderMessage(m) {
 }
 
 function renderThread(sent) {
-  const d = toDate(TODAY);
-  const date = d.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", timeZone: "UTC" });
+  const date = longDate(TODAY, { weekday: "long", month: "long", day: "numeric" });
   document.getElementById("thread").replaceChildren(
     el("p", "notice", "Messages may take time to reach Earth. We’ll show you when they arrive."),
     el("p", "date", `${date} · Demo conversation`),
@@ -57,7 +56,7 @@ function renderThread(sent) {
 }
 
 async function init() {
-  renderClock();
+  renderTopbar("calendar");
 
   let tst = null;
   try {

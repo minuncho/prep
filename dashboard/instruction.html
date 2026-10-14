@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Health Instruction</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css?v=3">
+</head>
+<body>
+  <header class="topbar" id="topbar"></header>
+
+  <main class="page">
+    <h1 class="page-title with-sub">Health Instruction</h1>
+    <p class="page-sub">Find your care instructions, health records and doctor’s notes.</p>
+
+    <form class="search" id="search">
+      <input id="query" placeholder="Search a symptom, a health check or a doctor’s note..." autocomplete="off">
+      <button class="cta">Search</button>
+    </form>
+    <div class="tabs" id="tabs">
+      <button class="active" data-kind="">All</button>
+      <button data-kind="My health">My health</button>
+      <button data-kind="Doctor’s notes">Doctor’s notes</button>
+      <button data-kind="Care guidance">Care guidance</button>
+    </div>
+
+    <div class="instruction">
+      <aside class="card side-card">
+        <h2><b>A</b>My health profile</h2>
+        <ul class="facts">
+          <li>Crew member A</li>
+        </ul>
+        <h3>Your basic health details</h3>
+        <ul class="facts">
+          <li>Medical history: Not added</li>
+          <li>Allergies: Not added</li>
+          <li>Medication: Not added</li>
+        </ul>
+        <a class="cta" href="profile.html">Edit my information</a>
+      </aside>
+      <section class="card helpful">
+        <h2>Helpful for you right now</h2>
+        <div id="items"></div>
+      </section>
+    </div>
+    <a class="fab" href="conversation.html">✧ Ground physician</a>
+  </main>
+
+  <script src="common.js?v=3"></script>
+  <script src="instruction.js?v=3"></script>
+</body>
+</html>
