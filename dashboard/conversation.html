@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Doctor conversation</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="pill active" href="index.html">My calendar</a>
+    <button class="pill">Health Instruction</button>
+    <span class="spacer"></span>
+    <span class="clock" id="utc"></span>
+    <span class="clock" id="sol"></span>
+    <select class="pill" aria-label="Location and role">
+      <option>SPACE / Astronaut</option>
+    </select>
+    <button class="pill">My profile</button>
+  </header>
+
+  <main class="page">
+    <h1 class="page-title">A conversation with your doctor.</h1>
+
+    <div class="chat-layout">
+      <aside class="card side">
+        <span class="tag">1:1 conversation</span>
+        <div class="tile">
+          <div class="name"><b>DR</b>Ground doctor</div>
+          <div class="muted">Your flight care team</div>
+          <div class="note">Sleep record received</div>
+        </div>
+        <h3>Shared in this chat</h3>
+        <div class="tile">
+          <div class="name">Sleep check</div>
+          <div class="muted" id="shared-when"></div>
+          <div id="shared-value"></div>
+        </div>
+        <button class="cta">View shared record</button>
+        <p class="hint">Your messages stay saved here while the connection is delayed.</p>
+      </aside>
+
+      <section class="card chat">
+        <div class="chat-head">
+          <span class="avatar">DR</span>
+          <div>
+            <div class="who">Ground doctor</div>
+            <div class="team">Flight care team</div>
+          </div>
+          <button class="more" aria-label="More">···</button>
+        </div>
+        <div class="thread" id="thread"></div>
+        <form class="composer" id="composer">
+          <button type="button" class="plus" aria-label="Attach">+</button>
+          <input id="draft" placeholder="Write a message to your doctor..." autocomplete="off">
+          <button class="cta">Send</button>
+        </form>
+      </section>
+    </div>
+  </main>
+
+  <script src="common.js"></script>
+  <script src="conversation.js"></script>
+</body>
+</html>

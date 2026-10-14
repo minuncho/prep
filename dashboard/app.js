@@ -1,24 +1,12 @@
 // ver2 — Weekly calendar. 일정은 event_dummy.csv, 수면 수치는 A_dummy120.csv에서 읽는다.
 
-const EVENTS_CSV = "../data/event_dummy.csv";
-const BIOMARKER_CSV = "../data/A_dummy120.csv";
-const BIOMARKER_CREW = "A"; // 생체 데이터는 A 대원 것만 있다
-
-// 디자인 시안의 "지금" (UTC 2026-01-04 12:30, SOL 004)
-const MISSION_START = "2026-01-01";
-const NOW = "2026-01-04 12:30";
-
 const DOW = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
 const MONTHS = ["January", "February", "March", "April", "May", "June", "July",
   "August", "September", "October", "November", "December"];
-const STATUS = {
-  "정상": { label: "Normal", cls: "" },
-  "경고": { label: "Needs attention", cls: "warn" },
-  "위험": { label: "Critical", cls: "alert" },
-};
 const HEALTH_CHECKS = {
   "Self-reported sleep quality": { label: "How well you slept", unit: "" },
   "TST": { label: "Time asleep", unit: " h" },
+  "SL": { label: "Time to fall asleep", unit: " min" },
   "SE": { label: "Sleep efficiency", unit: "%" },
   "WASO": { label: "Awake during the night", unit: " min" },
 };
@@ -31,48 +19,6 @@ const state = {
   filter: "all",
   crew: "A",
 };
-
-function parseCsv(text) {
-  const rows = [];
-  let row = [], cell = "", quoted = false;
-  text = text.replace(/^﻿/, "");
-  for (let i = 0; i < text.length; i++) {
-    const c = text[i];
-    if (quoted) {
-      if (c === '"' && text[i + 1] === '"') { cell += '"'; i++; }
-      else if (c === '"') quoted = false;
-      else cell += c;
-    } else if (c === '"') quoted = true;
-    else if (c === ",") { row.push(cell); cell = ""; }
-    else if (c === "\n") { row.push(cell); rows.push(row); row = []; cell = ""; }
-    else if (c !== "\r") cell += c;
-  }
-  if (cell || row.length) { row.push(cell); rows.push(row); }
-  const [header, ...body] = rows;
-  return body
-    .filter(r => r.length === header.length)
-    .map(r => Object.fromEntries(header.map((h, i) => [h, r[i]])));
-}
-
-async function loadCsv(url) {
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`${url}: ${res.status}`);
-  return parseCsv(await res.text());
-}
-
-// 날짜는 "YYYY-MM-DD" 문자열로 다루고 계산할 때만 UTC Date로 바꾼다
-const toDate = d => new Date(d + "T00:00:00Z");
-const addDays = (d, n) => new Date(toDate(d).getTime() + n * 864e5).toISOString().slice(0, 10);
-const missionDay = d => Math.round((toDate(d) - toDate(MISSION_START)) / 864e5) + 1;
-const dayLabel = d => "DAY " + String(missionDay(d)).padStart(3, "0");
-const pad2 = n => String(n).padStart(2, "0");
-
-function el(tag, cls, text) {
-  const node = document.createElement(tag);
-  if (cls) node.className = cls;
-  if (text !== undefined) node.textContent = text;
-  return node;
-}
 
 function eventsOn(date) {
   return state.events.filter(e =>
@@ -140,7 +86,7 @@ function renderLog() {
   document.getElementById("log-sub").textContent = `${dayLabel(date)} · Latest records first`;
 
   const records = state.crew !== BIOMARKER_CREW ? [] : state.biomarkers
-    .filter(b => b.timestamp.startsWith(date) && HEALTH_CHECKS[b.Biomarker] && b.timestamp <= NOW)
+    .filter(b => b.timestamp.startsWith(date))
     .sort((a, b) => b.timestamp.localeCompare(a.timestamp));
 
   const body = document.getElementById("log");
@@ -153,7 +99,9 @@ function renderLog() {
     return;
   }
   body.replaceChildren(...records.map(b => {
-    const check = HEALTH_CHECKS[b.Biomarker], status = STATUS[b.Status];
+    // 이름을 풀어 쓴 항목 외에는 CSV의 Biomarker 이름을 그대로 보여준다
+    const check = HEALTH_CHECKS[b.Biomarker] || { label: b.Biomarker, unit: "" };
+    const status = STATUS[b.Status];
     const row = el("tr");
     row.append(
       el("td", "", `${dayLabel(date)} ${b.timestamp.slice(11, 16)}`),
@@ -170,8 +118,7 @@ function render() {
 }
 
 async function init() {
-  document.getElementById("utc").textContent = `UTC ${NOW}`;
-  document.getElementById("sol").textContent = "SOL " + String(missionDay(NOW.slice(0, 10))).padStart(3, "0");
+  renderClock();
 
   try {
     [state.events, state.biomarkers] = await Promise.all([loadCsv(EVENTS_CSV), loadCsv(BIOMARKER_CSV)]);
