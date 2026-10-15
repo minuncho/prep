@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="ko">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>우주 통신 시뮬레이터</title>
+<title>Space Link Simulator</title>
 <style>
   * { box-sizing: border-box; }
   body { font-family: -apple-system, system-ui, sans-serif; margin: 0; padding: 20px; background: #f5f6f8; color: #222; }
@@ -53,21 +53,21 @@
   <section id="marsPanel" class="mars" style="display:none">
     <div class="col">
       <div class="card">
-        <h3>원본 (A_hot)</h3>
+        <h3>Raw data (A_hot)</h3>
         <div class="row">
           <input type="file" id="hotInput" accept=".csv">
-          <button id="playBtn">재생 시작</button>
-          <button id="resetBtn">초기화</button>
+          <button id="playBtn">Start playback</button>
+          <button id="resetBtn">Reset</button>
         </div>
         <p class="sub" id="hotStatus"></p>
         <div class="scroll"><table id="hotTable"></table></div>
       </div>
 
       <div class="card">
-        <h3>요약 (A_cold · Biomarker 기준 groupby)</h3>
+        <h3>Summary (A_cold · grouped by Biomarker)</h3>
         <div class="scroll"><table id="coldTable"></table></div>
         <div class="row" style="margin-top:10px">
-          <button id="flushBtn">A_cold 지금 발송 (테스트)</button>
+          <button id="flushBtn">Send A_cold now (test)</button>
           <span class="sub" id="sendInfo"></span>
         </div>
       </div>
@@ -75,21 +75,21 @@
 
     <div class="col">
       <div class="card">
-        <h3>용량 비교</h3>
+        <h3>Size comparison</h3>
         <div class="scroll"><table id="sizeTable"></table></div>
       </div>
 
       <div class="card">
-        <h3>이상치 (A_priority)</h3>
+        <h3>Anomalies (A_priority)</h3>
         <p class="sub" id="priorityStatus"></p>
         <div class="scroll" style="margin-top:8px"><table id="prioTable"></table></div>
         <div class="row" style="margin-top:8px">
-          <button id="priorityBtn" class="primary">지금 발송 (테스트)</button>
+          <button id="priorityBtn" class="primary">Send now (test)</button>
         </div>
       </div>
 
       <div class="card">
-        <h3>변환 로그</h3>
+        <h3>Conversion log</h3>
         <ul id="convLog" class="log"></ul>
       </div>
     </div>
@@ -99,15 +99,15 @@
     <!-- 전송 기록 (양쪽 창 공통) -->
     <section class="card">
       <div class="row" style="justify-content:space-between">
-        <h3 style="margin:0">전송 기록 (blocks.csv)</h3>
-        <button id="blockDownload">다운로드</button>
+        <h3 style="margin:0">Transmission log (blocks.csv)</h3>
+        <button id="blockDownload">Download</button>
       </div>
       <div class="scroll" style="margin-top:10px"><table id="blockTable"></table></div>
     </section>
 
     <!-- 받은 기록 (양쪽 창 공통) -->
     <section class="card">
-      <h3>받은 기록</h3>
+      <h3>Received files</h3>
       <ul id="inbox" class="log"></ul>
     </section>
   </div>

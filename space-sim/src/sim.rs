@@ -192,7 +192,7 @@ pub fn parse_csv(text: &str, tz: i64) -> Result<Vec<Row>, String> {
     let mut lines = text.lines().filter(|l| !l.trim().is_empty());
     let header: Vec<&str> = lines
         .next()
-        .ok_or_else(|| "빈 파일입니다".to_string())?
+        .ok_or_else(|| "The file is empty".to_string())?
         .split(',')
         .map(str::trim)
         .collect();
@@ -200,7 +200,7 @@ pub fn parse_csv(text: &str, tz: i64) -> Result<Vec<Row>, String> {
         header
             .iter()
             .position(|h| *h == name)
-            .ok_or_else(|| format!("A_hot.csv에 {name} 열이 필요합니다"))
+            .ok_or_else(|| format!("A_hot.csv needs a {name} column"))
     };
     let (i_ts, i_bio, i_fig) = (find("timestamp")?, find("Biomarker")?, find("Figure")?);
     let i_status = header.iter().position(|h| *h == "Status");
@@ -210,7 +210,7 @@ pub fn parse_csv(text: &str, tz: i64) -> Result<Vec<Row>, String> {
         let cols: Vec<&str> = line.split(',').collect();
         let get = |i: usize| cols.get(i).map(|s| s.trim()).unwrap_or("");
         let ts = parse_ts(get(i_ts), tz)
-            .ok_or_else(|| format!("{}행: timestamp 형식 오류 ({})", n + 2, get(i_ts)))?;
+            .ok_or_else(|| format!("Row {}: invalid timestamp ({})", n + 2, get(i_ts)))?;
         rows.push(Row {
             ts,
             biomarker: get(i_bio).to_string(),
@@ -244,13 +244,13 @@ fn csv_line(r: &Row, tz: i64) -> String {
 
 fn block_status(b: &Block, now: i64) -> &'static str {
     if !b.started {
-        "대기"
+        "Queued"
     } else if now < b.tx_end {
-        "전송 중"
+        "Sending"
     } else if now < b.arrive_at {
-        "도착 대기"
+        "In transit"
     } else {
-        "도착 완료"
+        "Arrived"
     }
 }
 
@@ -390,7 +390,7 @@ impl Sim {
         let anomaly = is_priority(&row.status);
         if anomaly || row.ctx {
             let mut p = row.clone();
-            p.reason = if anomaly { "이상치" } else { "맥락" };
+            p.reason = if anomaly { "Anomaly" } else { "Context" };
             self.prio_text.push_str(&line);
             self.prio_text.push('\n');
             self.prio_all.push(p.clone());
@@ -418,7 +418,7 @@ impl Sim {
         self.playing = false;
         let at = self.latest_ts.unwrap_or(0);
         let rest: Vec<Row> = self.hot.drain(..).collect();
-        self.absorb(rest, at, "출력 완료 · ");
+        self.absorb(rest, at, "Playback done · ");
     }
 
     fn absorb(&mut self, rows: Vec<Row>, at: i64, prefix: &str) {
@@ -436,7 +436,7 @@ impl Sim {
         }
         let detail: Vec<String> = per.iter().map(|(n, c)| format!("{n} {c}")).collect();
         let msg = format!(
-            "{prefix}{} 원본 {}행 → 요약 반영 ({})",
+            "{prefix}{} {} raw rows → added to summary ({})",
             &fmt_local(at, self.cfg.tz_offset_min)[11..],
             rows.len(),
             detail.join(", ")
@@ -538,16 +538,16 @@ impl Sim {
                     text.push_str(&csv_line(r, tz));
                     text.push('\n');
                 }
-                self.log(format!("A_priority.bin 발송 ({}행, zstd 전)", rows.len()));
+                self.log(format!("Sent A_priority.bin ({} rows, before zstd)", rows.len()));
                 Some(Outgoing { kind: Kind::Priority, name: "A_priority.bin".into(), text })
             }
             Req::Cold => {
                 if self.summary.is_empty() {
-                    self.log("요약할 바이오마커가 없어 A_cold.bin은 건너뜀".into());
+                    self.log("No biomarkers to summarize, skipped A_cold.bin".into());
                     return None;
                 }
                 let n = self.summary.len();
-                self.log(format!("정각 발송: A_cold.bin (바이오마커 {n}개, zstd 전)"));
+                self.log(format!("Scheduled send: A_cold.bin ({n} biomarkers, before zstd)"));
                 Some(Outgoing { kind: Kind::Bulk, name: "A_cold.bin".into(), text: self.cold_text() })
             }
             Req::Blocks => Some(Outgoing {
@@ -563,7 +563,7 @@ impl Sim {
         let id = self.blocks.len() as u32;
         self.blocks.push(Block {
             id,
-            from: if self.cfg.is_mars { "화성" } else { "지구" },
+            from: if self.cfg.is_mars { "Mars" } else { "Earth" },
             name: name.to_string(),
             size,
             started: false,
@@ -668,7 +668,7 @@ impl Sim {
             .rev()
             .take(30)
             .map(|(i, r)| {
-                let state = if i < self.prio_sent { "발송" } else { "대기" };
+                let state = if i < self.prio_sent { "Sent" } else { "Pending" };
                 json!([fmt_local(r.ts, tz), r.biomarker, r.figure.to_string(), r.status, r.reason, state])
             })
             .collect();
@@ -813,7 +813,7 @@ mod tests {
         // SL 경고 1행 (맥락 처리는 SL 처음 3행 = 1행 전부)
         let snap = sim.snapshot(0);
         assert_eq!(snap["prioTotal"], 1);
-        assert_eq!(snap["prioRows"][0][4], "이상치");
+        assert_eq!(snap["prioRows"][0][4], "Anomaly");
     }
 
     #[test]

@@ -13,13 +13,13 @@ const ZSTD_LEVEL = 3;
 
 // ===== 창 역할 =====
 const SIDE = new URLSearchParams(location.search).get('side') === 'mars' ? 'mars' : 'earth';
-const SIDE_NAME = SIDE === 'earth' ? '지구' : '화성';
+const SIDE_NAME = SIDE === 'earth' ? 'Earth' : 'Mars';
 const LAG_MS = SIDE === 'mars' ? CLOCK_LAG_MS_MARS : 0;
 const TZ = -new Date().getTimezoneOffset(); // 로컬 시간대 (분)
 
 const $ = id => document.getElementById(id);
-$('title').textContent = `${SIDE_NAME} 창`;
-document.title = `${SIDE_NAME} - 우주 통신 시뮬레이터`;
+$('title').textContent = `${SIDE_NAME} window`;
+document.title = `${SIDE_NAME} - Space Link Simulator`;
 if (SIDE === 'mars') $('marsPanel').style.display = 'grid';
 
 // ===== Rust 로직 =====
@@ -40,7 +40,7 @@ import('https://cdn.jsdelivr.net/npm/@bokuweb/zstd-wasm@0.0.27/+esm')
     zstdReady = true;
   })
   .catch(err => {
-    console.error('zstd 로딩 실패', err);
+    console.error('Failed to load zstd', err);
   });
 
 function compress(text) {
@@ -175,12 +175,12 @@ function renderSizes() {
     if (t === '') return 0;
     return zstdReady ? compress(t).length : null;
   };
-  const show = v => (v === null ? '로딩 중' : fmtBytes(v));
-  fillTable('sizeTable', ['누적', '용량'], [
-    ['누적 파일 (완전 원본)', playFileSize ? fmtBytes(playFileSize) : '-'],
-    ['누적 hot (완전 원본 + zstd)', show(sizeOf(texts.hot))],
-    ['누적 cold (요약 zstd)', show(sizeOf(texts.cold))],
-    ['누적 priority (zstd만)', show(sizeOf(texts.prio))],
+  const show = v => (v === null ? 'Loading' : fmtBytes(v));
+  fillTable('sizeTable', ['Cumulative', 'Size'], [
+    ['File total (full raw)', playFileSize ? fmtBytes(playFileSize) : '-'],
+    ['hot total (full raw + zstd)', show(sizeOf(texts.hot))],
+    ['cold total (summary, zstd)', show(sizeOf(texts.cold))],
+    ['priority total (zstd only)', show(sizeOf(texts.prio))],
   ]);
 }
 
@@ -191,12 +191,12 @@ function renderInbox() {
     const a = document.createElement('a');
     a.href = m.url;
     a.download = m.name;
-    a.textContent = '다운로드';
+    a.textContent = 'Download';
     li.appendChild(a);
     const meta = document.createElement('span');
     meta.className = 'sub';
-    const t = ms => new Date(ms).toLocaleTimeString('ko-KR', { hour12: false });
-    meta.textContent = `  [${m.from === SIDE ? SIDE_NAME : (m.from === 'mars' ? '화성' : '지구')} 보냄 · 도착 ${t(m.receivedAt)}]`;
+    const t = ms => new Date(ms).toLocaleTimeString('en-GB', { hour12: false });
+    meta.textContent = `  [sent by ${m.from === 'mars' ? 'Mars' : 'Earth'} · arrived ${t(m.receivedAt)}]`;
     li.appendChild(meta);
     return li;
   }));
@@ -209,23 +209,23 @@ function render(snap) {
   $('date').textContent = snap.date;
 
   fillTable('blockTable',
-    ['block_id', '시계', '전송 시작', '파일', '용량', '상태', '도착 예정'],
+    ['block_id', 'Clock', 'Send start', 'File', 'Size', 'Status', 'ETA'],
     snap.blocks);
 
   if (SIDE === 'mars') {
-    $('playBtn').textContent = snap.playing ? '일시정지' : '재생 시작';
+    $('playBtn').textContent = snap.playing ? 'Pause' : 'Start playback';
     $('hotStatus').textContent =
-      `로드 ${snap.loaded}행 | 출력 ${snap.played}행 | 원본 ${snap.hotCount}행 | 요약 바이오마커 ${snap.coldRows.length}개`;
-    $('sendInfo').textContent = `다음 정각 발송: ${snap.nextCold} · 주기 ${COLD_EVERY_MS / 60000}분`;
+      `Loaded ${snap.loaded} rows | Played ${snap.played} rows | Raw ${snap.hotCount} rows | Summarized biomarkers ${snap.coldRows.length}`;
+    $('sendInfo').textContent = `Next scheduled send: ${snap.nextCold} · every ${COLD_EVERY_MS / 60000} min`;
     $('priorityStatus').textContent =
-      `대기 ${snap.prioPending}행 · 누적 발송 ${snap.prioSent}행 · ${PRIO_EVERY_MS / 1000}초마다 발송`;
+      `Pending ${snap.prioPending} rows · Sent ${snap.prioSent} rows · sends every ${PRIO_EVERY_MS / 1000} s`;
 
     fillTable('hotTable', ['timestamp', 'Biomarker', 'Figure', 'Status'], snap.hotRows);
     fillTable('coldTable',
       ['Biomarker', 'count', 'min', 'max', 'mean', 'start_timestamp', 'end_timestamp'],
       snap.coldRows);
     fillTable('prioTable',
-      ['timestamp', 'Biomarker', 'Figure', 'Status', '사유', '상태'],
+      ['timestamp', 'Biomarker', 'Figure', 'Status', 'Reason', 'State'],
       snap.prioRows);
     $('convLog').replaceChildren(...snap.convLog.map(t => {
       const li = document.createElement('li');
