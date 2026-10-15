@@ -24,6 +24,8 @@
   button:hover { background: #f0f2f5; }
   button.primary { background: #2563eb; border-color: #2563eb; color: #fff; }
   button.primary:hover { background: #1d4fd6; }
+  .file-btn { padding: 5px 12px; border: 1px solid #cfd3d8; border-radius: 6px; background: #fff; cursor: pointer; font-size: 13px; }
+  .file-btn:hover { background: #f0f2f5; }
 
   ul { padding-left: 18px; margin: 0; }
   li { margin: 4px 0; font-size: 14px; }
@@ -55,7 +57,9 @@
       <div class="card">
         <h3>Raw data (A_hot)</h3>
         <div class="row">
-          <input type="file" id="hotInput" accept=".csv">
+          <!-- 브라우저 기본 파일 버튼은 OS 언어로 나와서 영어 버튼으로 감싼다 -->
+          <label class="file-btn">Choose file<input type="file" id="hotInput" accept=".csv" hidden></label>
+          <span class="sub" id="hotFileName">No file chosen</span>
           <button id="playBtn">Start playback</button>
           <button id="resetBtn">Reset</button>
         </div>

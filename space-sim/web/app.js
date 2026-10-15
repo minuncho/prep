@@ -113,6 +113,7 @@ setInterval(() => sim.playStep(), PLAY_INTERVAL_MS);
 $('hotInput').addEventListener('change', async e => {
   const file = e.target.files[0];
   if (!file) return;
+  $('hotFileName').textContent = file.name;
   try {
     sim.load(await file.text());
     playFileSize = file.size;
@@ -161,6 +162,10 @@ function fillTable(id, headers, rows) {
   });
   table.replaceChildren(head, ...body);
 }
+
+// CSV의 Status 값(정상/경고/위험)은 그대로 두고 화면에만 영어로 보여준다
+const STATUS_EN = { '정상': 'Normal', '경고': 'Warning', '위험': 'Critical' };
+const statusInEnglish = row => row.map((v, i) => (i === 3 && STATUS_EN[v]) || v);
 
 function fmtBytes(n) {
   if (n < 1024) return `${n} B`;
@@ -220,13 +225,13 @@ function render(snap) {
     $('priorityStatus').textContent =
       `Pending ${snap.prioPending} rows · Sent ${snap.prioSent} rows · sends every ${PRIO_EVERY_MS / 1000} s`;
 
-    fillTable('hotTable', ['timestamp', 'Biomarker', 'Figure', 'Status'], snap.hotRows);
+    fillTable('hotTable', ['timestamp', 'Biomarker', 'Figure', 'Status'], snap.hotRows.map(statusInEnglish));
     fillTable('coldTable',
       ['Biomarker', 'count', 'min', 'max', 'mean', 'start_timestamp', 'end_timestamp'],
       snap.coldRows);
     fillTable('prioTable',
       ['timestamp', 'Biomarker', 'Figure', 'Status', 'Reason', 'State'],
-      snap.prioRows);
+      snap.prioRows.map(statusInEnglish));
     $('convLog').replaceChildren(...snap.convLog.map(t => {
       const li = document.createElement('li');
       li.textContent = t;
