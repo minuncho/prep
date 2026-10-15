@@ -29,7 +29,14 @@ cargo build --target wasm32-unknown-unknown --release
 wasm-bindgen --target web --out-dir web/pkg target/wasm32-unknown-unknown/release/space_sim.wasm
 ```
 
-## 실행
+## 공유 링크 (GitHub Pages)
+
+- 지구 창: https://minuncho.github.io/prep/space-sim/web/index.html?side=earth
+- 화성 창: https://minuncho.github.io/prep/space-sim/web/index.html?side=mars
+
+`main`에 푸시하면 1분쯤 뒤 반영된다. 두 창은 같은 브라우저에서 열어야 서로 통신한다.
+
+## 로컬 실행
 
 ```bash
 cd web
