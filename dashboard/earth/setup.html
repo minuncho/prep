@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Care workspace setup</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../style.css?v=7">
+</head>
+<body class="setup">
+  <main class="setup-page">
+    <form class="step" data-step="1">
+      <p class="kicker">GROUND DOCTOR / 1 OF 3</p>
+      <h1>Let’s set up your care workspace.</h1>
+      <p class="lead">Add your professional details and current location.</p>
+      <section class="card grid-form">
+          <label><span>Full name *</span><input name="name" placeholder="Enter your name" autocomplete="off" required></label>
+          <label><span>Work email *</span><input name="email" placeholder="name@organization" autocomplete="off" required></label>
+          <label><span>Organization / care team *</span><input name="organization" placeholder="Mission control or medical team" autocomplete="off" required></label>
+          <label><span>Specialty / professional ID</span><input name="specialty" placeholder="Add your role or credential reference" autocomplete="off"></label>
+          <label><span>Current location *</span><input name="location" placeholder="Earth · Country / City / Facility" autocomplete="off" required></label>
+          <label><span>Local time zone</span><input name="timezone" placeholder="Select time zone · UTC remains shared" autocomplete="off"></label>
+          <label><span>Mission / expedition *</span><input name="mission" placeholder="Select assigned mission" autocomplete="off" required></label>
+          <label><span>Care-team invitation code</span><input name="invite" placeholder="Enter invitation code" autocomplete="off"></label>
+      </section>
+      <div class="step-actions">
+        <a class="ghost" href="../">Back</a>
+        <button class="cta">Connect my crew</button>
+      </div>
+    </form>
+
+    <form class="step" data-step="2" hidden>
+      <p class="kicker">GROUND DOCTOR / 2 OF 3</p>
+      <h1>Who will you be caring for?</h1>
+      <p class="lead">Connect your assigned astronauts and review the information to import.</p>
+      <section class="card">
+        <div class="load-row">
+          <label><span>Mission assignment / record ID</span><input name="assignment" placeholder="Enter assignment ID" autocomplete="off"></label>
+          <button type="button" class="cta" id="load-crew">Load crew information</button>
+        </div>
+        <div class="import-row">
+          <label class="ghost file-button">Upload crew CSV<input type="file" accept=".csv" id="import-file" hidden></label>
+          <span class="hint" id="import-result">Or connect through a mission records archive.</span>
+        </div>
+        <ul class="crew-loaded" id="crew-loaded"></ul>
+        <h3>Choose what to bring into your workspace</h3>
+        <div class="checks">
+          <label><input type="checkbox" name="bring" value="Crew profiles &amp; health history" checked> Crew profiles &amp; health history</label>
+          <label><input type="checkbox" name="bring" value="Measurements" checked> Measurements</label>
+          <label><input type="checkbox" name="bring" value="Prior instructions &amp; notes" checked> Prior instructions &amp; notes</label>
+        </div>
+      </section>
+      <div class="step-actions">
+        <button type="button" class="ghost" data-back>Back</button>
+        <button class="cta">Review care workspace</button>
+      </div>
+    </form>
+
+    <form class="step" data-step="3" hidden>
+      <p class="kicker">GROUND DOCTOR / 3 OF 3</p>
+      <h1>Your care workspace is almost ready.</h1>
+      <p class="lead">Confirm the right mission and crew before opening the overview.</p>
+      <section class="card summary">
+        <h2>Ground doctor workspace</h2>
+        <ul id="summary"></ul>
+        <label class="confirm"><input type="checkbox" name="confirm" required>
+          <span><b>I confirm this crew assignment and my permitted access to the selected records</b>
+          <small>Only the assigned care team should access astronaut health information.</small></span></label>
+      </section>
+      <div class="step-actions">
+        <button type="button" class="ghost" data-back>Back</button>
+        <button class="cta">Confirm &amp; open crew overview</button>
+      </div>
+    </form>
+  </main>
+
+  <script src="../common.js?v=7"></script>
+  <script src="../onboarding.js?v=7"></script>
+</body>
+</html>

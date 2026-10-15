@@ -361,3 +361,44 @@ td small.category { display: block; margin-top: 2px; color: var(--faint); font-s
 .others { margin-top: 20px; }
 .check-group h3 { margin: 18px 0 0; color: var(--muted); font-size: 13px; font-weight: 500; }
 .check-group .check { margin-top: 8px; }
+
+/* 첫 진입 설정 (3단계) */
+body.setup { min-height: 100vh; }
+.setup-page { max-width: 1120px; margin: 0 auto; padding: 72px 32px 60px; }
+.step .kicker { margin: 0; color: var(--sky); font-size: 12px; font-weight: 500; letter-spacing: .04em; }
+.step h1 { margin: 36px 0 0; color: #fff; font-size: 30px; font-weight: 400; }
+.step .lead { margin: 12px 0 36px; color: var(--sky); font-size: 14px; }
+.grid-form { display: grid; grid-template-columns: 1fr 1fr; gap: 22px 40px; padding: 28px; }
+.grid-form label, .load-row label { display: grid; gap: 10px; font-size: 14px; font-weight: 400; }
+.grid-form .wide { grid-column: 1 / -1; }
+.grid-form input, .grid-form select, .load-row input {
+  height: 44px; padding: 0 14px; border: 0; border-radius: 10px; background: var(--tile); font: inherit; font-size: 14px;
+}
+.import-row { display: flex; align-items: center; gap: 18px; margin-top: 4px; }
+.import-row .hint { color: var(--muted); font-size: 13px; }
+.file-button { width: auto; padding: 0 22px; cursor: pointer; }
+.cta.file-button { width: 264px; }
+.ghost { display: inline-flex; align-items: center; justify-content: center; width: 116px; height: 40px; border: 0; border-radius: 10px; background: var(--card); color: var(--ink); font-size: 14px; cursor: pointer; }
+.ghost.file-button { width: 210px; background: var(--tile); }
+.step-actions { display: flex; justify-content: space-between; align-items: center; margin-top: 28px; }
+.step-actions .cta { width: 256px; margin: 0; }
+.load-row { display: flex; align-items: end; gap: 18px; margin-bottom: 18px; }
+.load-row label { flex: 1; }
+.load-row .cta { width: 264px; margin: 0; }
+.crew-loaded { margin: 14px 0 0; padding: 0; list-style: none; color: var(--muted); font-size: 13px; }
+.crew-loaded li { margin-top: 4px; }
+.step h3 { margin: 20px 0 10px; font-size: 15px; font-weight: 500; }
+.checks { display: flex; gap: 28px; flex-wrap: wrap; font-size: 13px; }
+.summary { padding: 28px; }
+.summary h2 { font-size: 22px; font-weight: 400; }
+.summary ul { margin: 18px 0 0; padding: 0; list-style: none; font-size: 15px; }
+.summary li { margin-top: 12px; color: var(--ink); }
+.summary .arrow { margin: 0 14px; }
+.confirm { display: flex; gap: 10px; margin-top: 22px; padding: 18px 16px; border-radius: 12px; background: var(--tile); font-size: 14px; cursor: pointer; }
+.confirm b { font-weight: 500; }
+.confirm small { display: block; margin-top: 6px; color: var(--muted); font-size: 12px; }
+
+@media (max-width: 800px) {
+  .grid-form { grid-template-columns: 1fr; }
+  .load-row, .import-row { flex-direction: column; align-items: stretch; }
+}

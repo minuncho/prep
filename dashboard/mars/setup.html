@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Astronaut setup</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../style.css?v=7">
+</head>
+<body class="setup">
+  <main class="setup-page">
+    <form class="step" data-step="1">
+      <p class="kicker">ASTRONAUT / 1 OF 3</p>
+      <h1>Let’s set up your mission.</h1>
+      <p class="lead">Tell us who you are and where you are now.</p>
+      <section class="card grid-form">
+          <label><span>Full name *</span><input name="name" placeholder="Enter your name" autocomplete="off" required></label>
+          <label><span>Crew member ID *</span><input name="crewId" placeholder="Enter your ID" autocomplete="off" required></label>
+          <label><span>Mission / expedition *</span><input name="mission" placeholder="Enter or select a mission" autocomplete="off" required></label>
+          <label><span>Current location *</span><select name="location" required><option value="">Select</option><option>Station</option><option>Moon</option><option>Mars</option><option>In transit</option></select></label>
+          <label><span>Location details</span><input name="locationDetails" placeholder="Station, habitat or spacecraft" autocomplete="off"></label>
+          <label><span>Mission start (UTC)</span><input name="missionStart" placeholder="YYYY-MM-DD  HH:MM UTC" autocomplete="off"></label>
+          <label><span>Mission Sol reference</span><input name="sol" placeholder="Use mission-provided Sol reference" autocomplete="off"></label>
+          <label><span>Assigned ground care team</span><input name="careTeam" placeholder="Enter care-team invitation code" autocomplete="off"></label>
+      </section>
+      <div class="step-actions">
+        <a class="ghost" href="../">Back</a>
+        <button class="cta">Continue to health profile</button>
+      </div>
+    </form>
+
+    <form class="step" data-step="2" hidden>
+      <p class="kicker">ASTRONAUT / 2 OF 3</p>
+      <h1>A few details about your health.</h1>
+      <p class="lead">Add what your care team needs. You can update these details later.</p>
+      <section class="card grid-form">
+          <label><span>Date of birth</span><input name="birth" placeholder="YYYY-MM-DD" autocomplete="off"></label>
+          <label><span>Blood group</span><select name="blood"><option value="">Select</option><option>A+</option><option>A−</option><option>B+</option><option>B−</option><option>AB+</option><option>AB−</option><option>O+</option><option>O−</option><option>Unknown</option></select></label>
+          <label><span>Allergies</span><input name="allergies" placeholder="Add allergies / None / Unknown" autocomplete="off"></label>
+          <label><span>Current medication</span><input name="medication" placeholder="Name, dose and frequency / None" autocomplete="off"></label>
+          <label class="wide"><span>Relevant medical history</span><input name="history" placeholder="Add conditions, prior procedures or care needs" autocomplete="off"></label>
+        <div class="wide import-row">
+          <label class="cta file-button">Import existing health records<input type="file" accept=".csv" id="import-file" hidden></label>
+          <span class="hint" id="import-result">CSV or mission records · Review before saving</span>
+        </div>
+      </section>
+      <div class="step-actions">
+        <button type="button" class="ghost" data-back>Back</button>
+        <button class="cta">Continue to import</button>
+      </div>
+    </form>
+
+    <form class="step" data-step="3" hidden>
+      <p class="kicker">ASTRONAUT / 3 OF 3</p>
+      <h1>Ready for your first check-in?</h1>
+      <p class="lead">Review your setup before entering your calendar.</p>
+      <section class="card summary">
+        <h2>Astronaut workspace</h2>
+        <ul id="summary"></ul>
+        <label class="confirm"><input type="checkbox" name="share" required>
+          <span><b>Share this profile and selected records with my assigned care team</b>
+          <small>You can review your health information and care-team connection in My profile.</small></span></label>
+      </section>
+      <div class="step-actions">
+        <button type="button" class="ghost" data-back>Back</button>
+        <button class="cta">Confirm &amp; open my calendar</button>
+      </div>
+    </form>
+  </main>
+
+  <script src="../common.js?v=7"></script>
+  <script src="../onboarding.js?v=7"></script>
+</body>
+</html>

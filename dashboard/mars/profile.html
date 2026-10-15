@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../style.css?v=6">
+<link rel="stylesheet" href="../style.css?v=7">
 </head>
 <body>
   <header class="topbar" id="topbar"></header>
@@ -20,9 +20,9 @@
         <h2><b>A</b>Crew member A</h2>
         <h3>My health information</h3>
         <ul class="facts">
-          <li>Medical history: Not added</li>
-          <li>Allergies: Not added</li>
-          <li>Medication: Not added</li>
+          <li id="p-history">Medical history: Not added</li>
+          <li id="p-allergies">Allergies: Not added</li>
+          <li id="p-medication">Medication: Not added</li>
         </ul>
         <button class="cta">Update my details</button>
         <h3>Doctor’s notes</h3>
@@ -34,8 +34,8 @@
           <h2>Personal information</h2>
           <p class="sub">Your profile details for this mission.</p>
           <dl class="info">
-            <div><dt>Name</dt><dd>Crew member A</dd></div>
-            <div><dt>Email</dt><dd>Not added</dd></div>
+            <div><dt>Name</dt><dd id="p-name">Crew member A</dd></div>
+            <div><dt>Email</dt><dd id="p-email">Not added</dd></div>
             <div><dt>Mission start date</dt><dd id="mission-start"></dd></div>
             <div><dt>Mission time</dt><dd id="mission-time"></dd></div>
           </dl>
@@ -51,7 +51,7 @@
     <a class="fab" href="conversation.html">✧ Ground physician</a>
   </main>
 
-  <script src="../common.js?v=6"></script>
-  <script src="../profile.js?v=6"></script>
+  <script src="../common.js?v=7"></script>
+  <script src="../profile.js?v=7"></script>
 </body>
 </html>
