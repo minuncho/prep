@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Crew overview</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../style.css?v=4">
+</head>
+<body>
+  <header class="topbar" id="topbar"></header>
+
+  <main class="page">
+    <h1 class="page-title">Crew overview</h1>
+
+    <div class="crew-cards" id="crew-cards"></div>
+    <section class="card review">
+      <h2>Needs review</h2>
+      <div id="review"></div>
+    </section>
+    <div class="crew-tabs" id="crew-tabs">
+      <span>Selected astronaut</span>
+      <a data-crew="A">Crew A</a>
+      <a data-crew="B">Crew B</a>
+      <a data-crew="C">Crew C</a>
+      <a data-crew="D">Crew D</a>
+    </div>
+
+    <section class="card">
+      <h2>Weekly Calendar</h2>
+      <div class="range">
+        <span class="label" id="range"></span>
+        <span>
+          <button id="prev" aria-label="Previous week">‹</button>
+          <button id="next" aria-label="Next week">›</button>
+        </span>
+      </div>
+      <div class="filters">
+        <button class="chip active" data-filter="all">All</button>
+        <button class="chip" data-filter="mission"><span class="dot"></span>Mission</button>
+        <button class="chip" data-filter="biomarkers"><span class="dot"></span>Biomarkers</button>
+        <button class="chip" data-filter="meals"><span class="dot"></span>Meals</button>
+        <button class="chip" data-filter="alerts">Alerts only</button>
+      </div>
+      <div class="week" id="week"></div>
+    </section>
+
+    <div class="bottom">
+      <section class="card">
+        <h2>Data Log</h2>
+        <p class="sub" id="log-sub"></p>
+        <div class="log-scroll">
+          <table>
+            <thead><tr><th>Mission time</th><th>Health check</th><th>Value / Status</th></tr></thead>
+            <tbody id="log"></tbody>
+          </table>
+        </div>
+      </section>
+      <section class="card">
+        <h2>Recent Conversation</h2>
+        <p class="sub" id="recent-who"></p>
+        <div class="bubble" id="recent-bubble"></div>
+        <a class="cta" id="recent-link" href="conversation.html">Open crew conversation</a>
+      </section>
+    </div>
+  </main>
+
+  <script src="../common.js?v=4"></script>
+  <script src="../calendar.js?v=4"></script>
+</body>
+</html>

@@ -1,8 +1,14 @@
-// 화면들이 같이 쓰는 데이터 경로, CSV 읽기, 날짜 계산.
+// 화성(우주인)·지구(의사) 화면이 같이 쓰는 데이터 경로, CSV 읽기, 날짜 계산, 저장소.
 
-const EVENTS_CSV = "../data/event_dummy.csv";
-const BIOMARKER_CSV = "../data/A_dummy120.csv";
-const INSTRUCTION_CSV = "../data/instruction.csv";
+// 데이터 경로는 이 파일(dashboard/common.js) 위치를 기준으로 잡는다
+const DATA_DIR = new URL("../data/", document.currentScript.src);
+const EVENTS_CSV = new URL("event_dummy.csv", DATA_DIR).href;
+const BIOMARKER_CSV = new URL("A_dummy120.csv", DATA_DIR).href;
+const INSTRUCTION_CSV = new URL("instruction.csv", DATA_DIR).href;
+
+// 지금 보는 화면이 어느 쪽인지. 지구 쪽은 의사가 대원 A~D를 골라 본다
+const SIDE = location.pathname.includes("/earth/") ? "earth" : "mars";
+const CREWS = ["A", "B", "C", "D"];
 const BIOMARKER_CREW = "A"; // 생체 데이터는 A 대원 것만 있다
 
 // 디자인 시안의 "지금" (UTC 2026-01-04 12:30, SOL 004)
@@ -67,23 +73,93 @@ function el(tag, cls, text) {
 
 const longDate = (d, opts) => toDate(d).toLocaleDateString("en-US", { timeZone: "UTC", ...opts });
 
+// 의사 화면은 ?crew=B 처럼 대원을 고른다. 우주인 화면은 늘 A 대원이다
+function currentCrew() {
+  const crew = SIDE === "earth" && new URLSearchParams(location.search).get("crew");
+  return CREWS.includes(crew) ? crew : BIOMARKER_CREW;
+}
+const crewQuery = crew => SIDE === "earth" ? `crew=${crew}` : "";
+function pageUrl(page, params = {}) {
+  const query = new URLSearchParams(Object.entries(params).filter(([, v]) => v)).toString();
+  return page + (query ? "?" + query : "");
+}
+
 // 상단 바. active는 "calendar" | "instruction" | "profile"
 function renderTopbar(active) {
-  const link = (label, href, key) => {
+  const crew = SIDE === "earth" ? currentCrew() : "";
+  const link = (label, page, key) => {
     const a = el("a", "pill" + (key === active ? " active" : ""), label);
-    a.href = href;
+    a.href = pageUrl(page, { crew });
     return a;
   };
+  // 역할을 바꾸면 반대쪽 같은 화면으로 이동한다
   const where = el("select", "pill");
-  where.setAttribute("aria-label", "Location and role");
-  where.append(new Option("SPACE / Astronaut"));
+  where.setAttribute("aria-label", "Workspace");
+  where.append(new Option("SPACE / Astronaut", "mars"), new Option("EARTH / Doctor", "earth"));
+  where.value = SIDE;
+  where.addEventListener("change", () => {
+    const page = location.pathname.split("/").pop() || "index.html";
+    location.href = `../${where.value}/${page}`;
+  });
   document.getElementById("topbar").replaceChildren(
-    link("My calendar", "index.html", "calendar"),
+    link("My Calendar", "index.html", "calendar"),
     link("Health Instruction", "instruction.html", "instruction"),
     el("span", "spacer"),
     el("span", "clock", `UTC ${NOW}`),
     el("span", "clock", "SOL " + String(missionDay(NOW.slice(0, 10))).padStart(3, "0")),
     where,
-    link("My profile", "profile.html", "profile"),
+    link("Profile", "profile.html", "profile"),
   );
 }
+
+// 브라우저 저장소. 같은 브라우저에서는 화성·지구 화면이 같은 기록을 본다
+function readStore(key) {
+  try { return JSON.parse(localStorage.getItem("dashboard." + key)) || []; }
+  catch { return []; }
+}
+function writeStore(key, list) {
+  try { localStorage.setItem("dashboard." + key, JSON.stringify(list)); } catch {}
+}
+
+// 대원별 1:1 대화. A 대원은 시안의 예시 대화로 시작한다
+const DEMO_THREADS = {
+  A: [
+    { from: "crew", time: "12:13", note: "Delivered", attached: true, sleepQuestion: true },
+    { from: "doctor", time: "12:25", note: "Example physician reply",
+      text: "Thanks for sharing your record. I’ve received it. Please tell me how you’re feeling now." },
+    { from: "crew", time: "12:30", note: "Waiting to send",
+      text: "I’m still feeling tired. I’ve opened the saved sleep guidance." },
+  ],
+};
+function loadThread(crew, tst) {
+  return [...(DEMO_THREADS[crew] || []), ...readStore(`thread.${crew}`)].map(m => m.sleepQuestion ? {
+    ...m,
+    text: tst
+      ? `I slept ${tst.Figure} hours last night and still feel tired. Could you check my sleep record?`
+      : "I still feel tired. Could you check my sleep record?",
+  } : m);
+}
+function addMessage(crew, from, text) {
+  const list = readStore(`thread.${crew}`);
+  list.push({ from, time: NOW.slice(11), text, note: "Waiting to send" });
+  writeStore(`thread.${crew}`, list);
+}
+
+// 의사가 대원에게 보낸 안내. 우주인 화면의 Health Instruction에 나타난다
+const loadInstructions = crew => readStore(`instructions.${crew}`);
+function addInstruction(crew, title, body) {
+  const list = readStore(`instructions.${crew}`);
+  list.push({ title, body, time: NOW.slice(11) });
+  writeStore(`instructions.${crew}`, list);
+}
+
+// 하루 수면 기록 중 가장 심각한 항목. 심각도가 같으면 수면 시간(TST)이 먼저다
+const SEVERITY = { "정상": 0, "경고": 1, "위험": 2 };
+function worstSleepCheck(records) {
+  return ["TST", "SE", "WASO", "Self-reported sleep quality"]
+    .map(name => records.find(b => b.Biomarker === name))
+    .filter(b => b && b.Status !== "정상")
+    .sort((a, b) => SEVERITY[b.Status] - SEVERITY[a.Status])[0] || null;
+}
+const guideFor = (record, instructions) =>
+  record && instructions.find(i => i.biomarker === record.Biomarker && i.Status === record.Status) || null;

@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Health Instruction</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../style.css?v=4">
+</head>
+<body>
+  <header class="topbar" id="topbar"></header>
+
+  <main class="page">
+    <h1 class="page-title with-sub">Health Instruction</h1>
+    <p class="page-sub">Choose an astronaut to review their profile and your care instructions.</p>
+    <div class="crew-tabs" id="crew-tabs">
+      <span>Selected astronaut</span>
+      <a data-crew="A">Crew A</a>
+      <a data-crew="B">Crew B</a>
+      <a data-crew="C">Crew C</a>
+      <a data-crew="D">Crew D</a>
+    </div>
+
+    <div class="instruction">
+      <aside class="card side-card">
+        <h2 id="crew-initial"></h2>
+        <h3 id="crew-name"></h3>
+        <p class="faint">Selected astronaut</p>
+        <h3>Current health status</h3>
+        <ul class="facts" id="status"></ul>
+        <h3>Health profile</h3>
+        <ul class="facts">
+          <li>Medical history: Not added</li>
+          <li>Allergies: Not added</li>
+          <li>Medication: Not added</li>
+        </ul>
+        <a class="cta" id="records-link" href="daily.html">Open crew records</a>
+      </aside>
+      <div class="stack">
+        <section class="card">
+          <h2 id="recent-title"></h2>
+          <div id="recent"></div>
+        </section>
+        <section class="card">
+          <h2>Add an instruction <small class="for" id="for"></small></h2>
+          <form class="note-form" id="note-form">
+            <input id="note-title" placeholder="Instruction title" autocomplete="off" required>
+            <textarea id="note-body" rows="4" required></textarea>
+            <div class="form-actions">
+              <button class="cta" id="note-save"></button>
+              <span class="hint" id="note-result"></span>
+            </div>
+          </form>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <script src="../common.js?v=4"></script>
+  <script src="instruction.js?v=4"></script>
+</body>
+</html>

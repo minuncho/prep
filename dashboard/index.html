@@ -3,62 +3,29 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>My calendar</title>
+<title>One mission. Connected care.</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=3">
+<link rel="stylesheet" href="style.css?v=4">
 </head>
-<body>
-  <header class="topbar" id="topbar"></header>
-
-  <main class="page">
-    <h1 class="page-title">My calendar</h1>
-
-    <section class="card">
-      <h2>Weekly Calendar</h2>
-      <div class="range">
-        <span class="label" id="range"></span>
-        <span>
-          <button id="prev" aria-label="Previous week">‹</button>
-          <button id="next" aria-label="Next week">›</button>
-        </span>
-      </div>
-      <div class="filters">
-        <button class="chip active" data-filter="all">All</button>
-        <button class="chip" data-filter="mission"><span class="dot"></span>Mission</button>
-        <button class="chip" data-filter="biomarkers"><span class="dot"></span>Biomarkers</button>
-        <button class="chip" data-filter="meals"><span class="dot"></span>Meals</button>
-        <button class="chip" data-filter="alerts">Alerts only</button>
-        <select class="crew" id="crew" aria-label="Crew member"></select>
-      </div>
-      <div class="week" id="week"></div>
-    </section>
-
-    <div class="bottom">
-      <section class="card">
-        <h2>Data Log</h2>
-        <p class="sub" id="log-sub"></p>
-        <div class="log-scroll">
-          <table>
-            <thead><tr><th>Mission time</th><th>Health check</th><th>Value / Status</th></tr></thead>
-            <tbody id="log"></tbody>
-          </table>
-        </div>
+<body class="onboarding">
+  <main>
+    <h1>One mission. Connected care.</h1>
+    <div class="roles">
+      <section class="card role">
+        <div class="kicker">SPACE WORKSPACE</div>
+        <h2>I’m an astronaut</h2>
+        <p>View your schedule, health instructions and conversations with your ground doctor.</p>
+        <a class="cta" href="mars/">Continue as astronaut</a>
       </section>
-      <section class="card">
-        <h2>Recent Conversation</h2>
-        <p class="sub">Ground doctor · 1:1 chat</p>
-        <div class="bubble">
-          <div class="when">DAY 004 12:25</div>
-          I’ve received your record. Please tell me how you’re feeling now.
-        </div>
-        <a class="cta" href="conversation.html">Open conversation</a>
+      <section class="card role">
+        <div class="kicker">EARTH WORKSPACE</div>
+        <h2>I’m a doctor</h2>
+        <p>Review crew schedules, health instructions and conversations with astronauts.</p>
+        <a class="cta" href="earth/">Continue as doctor</a>
       </section>
     </div>
   </main>
-
-  <script src="common.js?v=3"></script>
-  <script src="app.js?v=3"></script>
 </body>
 </html>

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Crew conversation</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../style.css?v=4">
+</head>
+<body>
+  <header class="topbar" id="topbar"></header>
+
+  <main class="page">
+    <h1 class="page-title" id="title"></h1>
+
+    <div class="chat-layout">
+      <aside class="card side">
+        <h2 class="side-title">Conversations</h2>
+        <p class="hint">4 assigned astronauts</p>
+        <div id="crew-list"></div>
+        <p class="hint">Select a crew member to open their conversation.</p>
+      </aside>
+
+      <section class="card chat">
+        <div class="chat-head">
+          <span class="avatar" id="avatar"></span>
+          <div>
+            <div class="who" id="who"></div>
+            <div class="team" id="team"></div>
+          </div>
+          <button class="more" aria-label="More">···</button>
+        </div>
+        <div class="thread" id="thread"></div>
+        <form class="composer" id="composer">
+          <button type="button" class="plus" aria-label="Attach">+</button>
+          <input id="draft" autocomplete="off">
+          <button class="cta">Send</button>
+        </form>
+      </section>
+    </div>
+  </main>
+
+  <script src="../common.js?v=4"></script>
+  <script src="conversation.js?v=4"></script>
+</body>
+</html>

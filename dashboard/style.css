@@ -197,9 +197,13 @@ td.warn { color: var(--warn); }
 .msg { margin-top: 26px; font-size: 16px; }
 .msg .from { font-size: 12px; }
 .msg .meta { margin-top: 6px; color: var(--muted); font-size: 12px; }
-.msg.you { margin-left: 44%; margin-right: 44px; }
-.msg.doctor { width: 54%; padding: 14px 16px; border: 1px solid var(--tile-line); border-radius: 12px; background: var(--card); }
-.msg.doctor .from { color: var(--muted); }
+.msg.mine { margin-left: 44%; margin-right: 44px; }
+.msg.theirs { width: 54%; padding: 14px 16px; border: 1px solid var(--tile-line); border-radius: 12px; background: var(--card); }
+.msg.theirs .from { color: var(--muted); }
+/* 지구 화면: 대원 메시지는 말풍선 없이, 내 메시지는 오른쪽 말풍선 */
+.msg.theirs.plain { width: auto; margin-right: 44%; padding: 0; border: 0; background: none; }
+.msg.mine.bubble-mine { margin-left: 46%; margin-right: 0; padding: 14px 16px; border: 1px solid var(--tile-line); border-radius: 12px; background: var(--card); }
+.msg.mine.bubble-mine .from { color: var(--muted); }
 .attached { margin: 26px 114px 0 0; font-size: 14px; text-align: right; }
 .composer { display: flex; align-items: center; gap: 16px; padding: 20px 72px 26px 24px; }
 .composer .plus { border: 0; background: none; color: var(--muted); font-size: 22px; cursor: pointer; }
@@ -209,8 +213,9 @@ td.warn { color: var(--warn); }
 @media (max-width: 1000px) {
   .chat-layout { grid-template-columns: 1fr; }
   .chat-head .more { margin-right: 0; }
-  .msg.you { margin-left: 20%; margin-right: 0; }
-  .msg.doctor { width: 80%; }
+  .msg.mine, .msg.mine.bubble-mine { margin-left: 20%; margin-right: 0; }
+  .msg.theirs { width: 80%; }
+  .msg.theirs.plain { margin-right: 20%; }
   .composer { padding-right: 24px; }
 }
 
@@ -278,7 +283,7 @@ td.warn { color: var(--warn); }
 
 /* My profile */
 .profile { display: grid; grid-template-columns: 370px minmax(0, 1fr); gap: 24px; align-items: start; padding-bottom: 60px; }
-.profile .stack { display: grid; gap: 24px; }
+.stack { display: grid; gap: 24px; }
 .profile .side-card p { margin: 12px 0 0; color: var(--muted); font-size: 14px; line-height: 1.5; }
 .profile .side-card .cta { width: 270px; margin-top: 14px; }
 .info { margin: 10px 0 0; }
@@ -292,4 +297,61 @@ td.warn { color: var(--warn); }
 @media (max-width: 1000px) {
   .daily, .instruction, .profile { grid-template-columns: 1fr; }
   .check .status { width: 110px; }
+}
+
+/* 공용 보조 */
+.faint { margin: 4px 0 0; color: var(--faint); font-size: 12px; }
+li.alert { color: var(--critical); }
+li.warn { color: var(--warn); }
+li.faint { font-size: 12px; }
+a.day:hover { border-color: var(--tile-line); }
+
+/* 온보딩 */
+body.onboarding { display: grid; min-height: 100vh; place-items: center; padding: 24px 16px; }
+.onboarding h1 { margin: 0 0 22px; color: #fff; font-size: 34px; font-weight: 400; }
+.roles { display: grid; grid-template-columns: repeat(2, minmax(0, 470px)); gap: 24px; }
+.role .kicker { color: var(--muted); font-size: 11px; font-weight: 500; letter-spacing: .04em; }
+.role h2 { margin-top: 26px; font-size: 26px; font-weight: 400; }
+.role p { margin: 18px 0 0; color: var(--muted); font-size: 15px; line-height: 1.5; }
+.role .cta { margin-top: 30px; }
+
+/* 지구: 대원 개요 */
+.crew-cards { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
+.crew-card { display: block; padding: 18px 20px; border: 2px solid transparent; border-radius: 16px; background: var(--card); }
+.crew-card.selected { border-color: var(--sky); background: #eef4fb; }
+.crew-card .name { font-size: 20px; font-weight: 400; }
+.crew-card .state { margin-top: 12px; color: var(--muted); font-size: 15px; }
+.crew-card .state.alert { color: var(--critical); }
+.crew-card .state.warn { color: var(--warn); }
+.crew-card .muted { margin-top: 6px; color: var(--muted); font-size: 13px; }
+.crew-card .small { font-size: 12px; }
+.review { margin-top: 20px; padding: 18px 20px; }
+.review h2 { font-size: 16px; font-weight: 500; }
+.review .review-row { display: block; margin-top: 10px; font-size: 14px; }
+.review .review-row:hover { text-decoration: underline; }
+.review .muted { margin: 10px 0 0; color: var(--muted); font-size: 14px; }
+.crew-tabs { display: flex; align-items: center; gap: 10px; margin: 24px 0; flex-wrap: wrap; }
+.crew-tabs span { margin-right: 6px; color: var(--sky); font-size: 13px; }
+.crew-tabs a { height: 36px; min-width: 120px; padding: 0 14px; border-radius: 10px; background: var(--card); font-size: 14px; display: inline-flex; align-items: center; }
+.crew-tabs a.active { background: var(--blue); color: #fff; }
+
+/* 지구: 대화 목록 */
+.side-title { margin: 0; font-size: 20px; font-weight: 400; }
+.side .hint:first-of-type { margin-top: 8px; }
+.crew-item { display: block; margin-top: 12px; }
+.crew-item.selected { background: #dde8f5; }
+.crew-item .name { font-size: 16px; }
+.crew-item .muted { margin-top: 6px; overflow: hidden; font-size: 13px; text-overflow: ellipsis; white-space: nowrap; }
+
+/* 지구: 안내 작성 */
+.stack .card h2 small.for { margin-left: 8px; color: var(--muted); font-size: 13px; font-weight: 300; }
+#recent .body { margin: 12px 0; font-size: 15px; line-height: 1.55; }
+.note-form { display: grid; gap: 12px; margin-top: 16px; }
+.note-form input, .note-form textarea { padding: 12px 14px; border: 0; border-radius: 10px; background: var(--tile); font: inherit; font-size: 14px; resize: vertical; }
+.form-actions { display: flex; align-items: center; gap: 16px; }
+.form-actions .cta { width: 260px; margin: 0; }
+.form-actions .hint { margin: 0; color: var(--muted); font-size: 13px; }
+
+@media (max-width: 1000px) {
+  .roles, .crew-cards { grid-template-columns: 1fr; }
 }

@@ -1,4 +1,4 @@
-// ver2 — Health Instruction. 지금까지 측정된 오늘 기록(A_dummy120.csv) 중 정상이 아닌 항목에
+// 화성 — Health Instruction. 지금까지 측정된 오늘 기록(A_dummy120.csv) 중 정상이 아닌 항목에
 // instruction.csv의 안내문을 붙여 보여준다.
 
 const TODAY = NOW.slice(0, 10);
@@ -31,7 +31,14 @@ function buildItems(biomarkers, instructions) {
     source: `${dayLabel(TODAY)} ${tst.timestamp.slice(11, 16)} · A_dummy120.csv`,
   }] : [];
 
-  const notes = [{
+  // 의사가 지구 화면에서 저장한 안내
+  const saved = loadInstructions(BIOMARKER_CREW).reverse().map(n => ({
+    kind: "Doctor’s notes",
+    name: n.title,
+    body: n.body,
+    source: `${dayLabel(TODAY)} ${n.time} · Shared by your ground doctor`,
+  }));
+  const notes = saved.length ? saved : [{
     kind: "Doctor’s notes",
     name: "Your doctor’s notes will appear here →",
     href: "conversation.html",

@@ -1,25 +1,8 @@
-// ver2 — Doctor conversation. 공유된 수면 기록은 A_dummy120.csv에서 읽고,
-// 대화 내용은 연결할 데이터가 없어 시안의 예시 대화로 시작한다.
+// 화성 — 의사와의 대화. 공유된 수면 기록은 A_dummy120.csv에서 읽는다.
+// 대화는 브라우저 저장소에 대원별로 저장되어 지구(의사) 화면과 같이 쓴다.
 
 const TODAY = NOW.slice(0, 10);
-const STORAGE_KEY = "dashboard.conversation.sent";
-
-const DEMO_THREAD = [
-  { from: "you", time: "12:13", text: "", note: "Delivered", attached: true },
-  { from: "doctor", time: "12:25", note: "Example physician reply",
-    text: "Thanks for sharing your record. I’ve received it. Please tell me how you’re feeling now." },
-  { from: "you", time: "12:30", note: "Waiting to send",
-    text: "I’m still feeling tired. I’ve opened the saved sleep guidance." },
-];
-
-// 보낸 메시지는 이 브라우저에만 저장된다
-function loadSent() {
-  try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; }
-  catch { return []; }
-}
-function saveSent(sent) {
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(sent)); } catch {}
-}
+const CREW = BIOMARKER_CREW;
 
 function renderShared(tst) {
   const when = document.getElementById("shared-when");
@@ -36,22 +19,24 @@ function renderShared(tst) {
   value.textContent = `${tst.Figure} hours · ${status.label}`;
 }
 
+// 내 메시지는 오른쪽, 의사 메시지는 왼쪽 말풍선
 function renderMessage(m) {
-  const msg = el("div", "msg " + m.from);
+  const mine = m.from === "crew";
+  const msg = el("div", "msg " + (mine ? "mine" : "theirs"));
   msg.append(
-    el("div", "from", m.from === "you" ? "You" : "Ground doctor"),
+    el("div", "from", mine ? "You" : "Ground doctor"),
     el("div", "", m.text),
     el("div", "meta", `${dayLabel(TODAY)} ${m.time} · ${m.note}`),
   );
   return m.attached ? [msg, el("div", "attached", `Attached: sleep check · ${dayLabel(TODAY)}`)] : [msg];
 }
 
-function renderThread(sent) {
+function renderThread(tst) {
   const date = longDate(TODAY, { weekday: "long", month: "long", day: "numeric" });
   document.getElementById("thread").replaceChildren(
     el("p", "notice", "Messages may take time to reach Earth. We’ll show you when they arrive."),
     el("p", "date", `${date} · Demo conversation`),
-    ...[...DEMO_THREAD, ...sent].flatMap(renderMessage),
+    ...loadThread(CREW, tst).flatMap(renderMessage),
   );
 }
 
@@ -66,22 +51,16 @@ async function init() {
     console.error(err);
   }
   renderShared(tst);
-  DEMO_THREAD[0].text = tst
-    ? `I slept ${tst.Figure} hours last night and still feel tired. Could you check my sleep record?`
-    : "I still feel tired. Could you check my sleep record?";
-
-  const sent = loadSent();
-  renderThread(sent);
+  renderThread(tst);
 
   const draft = document.getElementById("draft");
   document.getElementById("composer").addEventListener("submit", e => {
     e.preventDefault();
     const text = draft.value.trim();
     if (!text) return;
-    sent.push({ from: "you", time: NOW.slice(11), text, note: "Waiting to send" });
-    saveSent(sent);
+    addMessage(CREW, "crew", text);
     draft.value = "";
-    renderThread(sent);
+    renderThread(tst);
   });
 }
 

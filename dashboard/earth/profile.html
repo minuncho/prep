@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Profile</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../style.css?v=4">
+</head>
+<body>
+  <header class="topbar" id="topbar"></header>
+
+  <main class="page">
+    <h1 class="page-title with-sub">My profile</h1>
+    <p class="page-sub">Manage your personal information and care-team records.</p>
+
+    <div class="profile">
+      <aside class="card side-card">
+        <h2>Ground doctor</h2>
+        <h3>Professional information</h3>
+        <ul class="facts">
+          <li>Specialty: Not added</li>
+          <li>Organization: Not added</li>
+          <li>Assigned crew: A, B, C, D</li>
+        </ul>
+        <button class="cta">Update my details</button>
+        <h3>Doctor’s notes</h3>
+        <p>Your doctor’s assessments will appear here when a record is added.</p>
+        <a class="cta" href="instruction.html">Open Health Instruction</a>
+      </aside>
+      <div class="stack">
+        <section class="card">
+          <h2>Personal information</h2>
+          <p class="sub">Your care-team profile for this mission.</p>
+          <dl class="info">
+            <div><dt>Name</dt><dd>Not added</dd></div>
+            <div><dt>Email</dt><dd>Not added</dd></div>
+            <div><dt>Mission start date</dt><dd id="mission-start"></dd></div>
+            <div><dt>Mission reference</dt><dd id="mission-sol"></dd></div>
+          </dl>
+        </section>
+        <section class="card records">
+          <h2>Care records</h2>
+          <a href="index.html"><b>Crew health history →</b><small>Medical history, allergies and medication</small></a>
+          <a href="conversation.html"><b>My consultation notes →</b><small>Your saved assessments and consultations</small></a>
+          <a href="instruction.html"><b>Saved instructions →</b><small>Care guidance you can return to</small></a>
+        </section>
+      </div>
+    </div>
+    <a class="fab" href="conversation.html">✧ Crew conversation</a>
+  </main>
+
+  <script src="../common.js?v=4"></script>
+  <script src="../profile.js?v=4"></script>
+</body>
+</html>
