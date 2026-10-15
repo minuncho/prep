@@ -5,15 +5,12 @@ const DATA_DIR = new URL("../data/", document.currentScript.src);
 const EVENTS_CSV = new URL("event_dummy.csv", DATA_DIR).href;
 const BIOMARKER_CSV = new URL("A_dummy120.csv", DATA_DIR).href;
 const INSTRUCTION_CSV = new URL("instruction.csv", DATA_DIR).href;
+const BIOMARKERS_CSV = new URL("biomarkers.csv", DATA_DIR).href;
 
 // 지금 보는 화면이 어느 쪽인지. 지구 쪽은 의사가 대원 A~D를 골라 본다
 const SIDE = location.pathname.includes("/earth/") ? "earth" : "mars";
 const CREWS = ["A", "B", "C", "D"];
 const BIOMARKER_CREW = "A"; // 생체 데이터는 A 대원 것만 있다
-
-// 데이터 기준 "오늘" (DAY 004). 더미 데이터가 2026년 1~4월이라 화면의 기록은 이 날짜를 기준으로 보여준다
-const MISSION_START = "2026-01-01";
-const NOW = "2026-01-04 12:30";
 
 // 지구↔화성 통신 간격. 메시지·안내는 이만큼 늦게 도착하고, 화성 시계는 이만큼 늦게 간다 (space-sim과 같은 방식)
 const LINK_DELAY_MS = 20 * 60000;
@@ -21,6 +18,23 @@ const CLOCK_LAG_MS = SIDE === "mars" ? LINK_DELAY_MS : 0;
 const sideNow = () => Date.now() - CLOCK_LAG_MS;
 // ms → "YYYY-MM-DD HH:MM:SS" (UTC)
 const fmtUtc = ms => new Date(ms).toISOString().slice(0, 19).replace("T", " ");
+
+// 미션 시계. A 대원 데이터(A_dummy120.csv)가 2026-01-01부터 120일치라서, 실제 하루가 지날 때마다
+// 미션 하루가 넘어가고 120일이 지나면 처음으로 돌아간다. 시각(시:분:초)은 실제 UTC를 그대로 쓴다.
+// ?day=4 처럼 주면 그 미션 날로 고정해서 볼 수 있다.
+const MISSION_START = "2026-01-01";
+const DATA_DAYS = 120;
+const DAY_MS = 864e5;
+const MISSION_START_MS = Date.parse(MISSION_START + "T00:00:00Z");
+const DAY_OVERRIDE = Math.min(Math.max(parseInt(new URLSearchParams(location.search).get("day"), 10) || 0, 0), DATA_DAYS);
+function missionMs(realMs) {
+  const sinceStart = Math.floor((realMs - MISSION_START_MS) / DAY_MS);
+  const index = DAY_OVERRIDE ? DAY_OVERRIDE - 1 : ((sinceStart % DATA_DAYS) + DATA_DAYS) % DATA_DAYS;
+  return MISSION_START_MS + index * DAY_MS + (((realMs % DAY_MS) + DAY_MS) % DAY_MS);
+}
+const missionNow = () => fmtUtc(missionMs(sideNow()));
+// 화면을 연 시점의 미션 시각 "YYYY-MM-DD HH:MM". 오늘 기록은 이 시각까지만 보여준다
+const NOW = missionNow().slice(0, 16);
 
 const STATUS = {
   "정상": { label: "Normal", cls: "" },
@@ -64,6 +78,33 @@ async function loadCsv(url) {
   return parseCsv(await res.text());
 }
 
+// event_dummy.csv는 첫 7일치뿐이라, 그 한 주 일정을 120일 내내 매주 반복해서 쓴다
+async function loadEvents() {
+  const week = await loadCsv(EVENTS_CSV);
+  const shift = (ts, days) => addDays(ts.slice(0, 10), days) + ts.slice(10);
+  return Array.from({ length: Math.ceil(DATA_DAYS / 7) }, (_, w) => week.map(e => ({
+    ...e,
+    start_timestamp: shift(e.start_timestamp, w * 7),
+    end_timestamp: shift(e.end_timestamp, w * 7),
+  }))).flat();
+}
+
+// biomarkers.csv: 항목별 분류(Category), 측정 방법, 주기, 설명
+async function loadBiomarkerInfo() {
+  const rows = await loadCsv(BIOMARKERS_CSV);
+  return Object.fromEntries(rows.map(r => [r.Biomarker, r]));
+}
+
+// 미션 시각까지 측정된 기록만 (과거 날짜는 전부, 오늘은 지금 시각까지)
+const measured = b => b.timestamp <= NOW;
+// 지금 미션 시각 기준 최근 24시간 기록
+const DAY_AGO = fmtUtc(Date.parse(NOW.replace(" ", "T") + ":00Z") - DAY_MS).slice(0, 16);
+const recent = records => records.filter(b => b.timestamp > DAY_AGO && measured(b));
+// 이름이 같은 항목 중 가장 최근에 측정된 것
+const latest = (records, name) =>
+  records.filter(b => b.Biomarker === name && measured(b)).sort((a, b) => b.timestamp.localeCompare(a.timestamp))[0] || null;
+const checkLabel = name => (HEALTH_CHECKS[name] || { label: name }).label;
+
 // 날짜는 "YYYY-MM-DD" 문자열로 다루고 계산할 때만 UTC Date로 바꾼다
 const toDate = d => new Date(d + "T00:00:00Z");
 const addDays = (d, n) => new Date(toDate(d).getTime() + n * 864e5).toISOString().slice(0, 10);
@@ -87,6 +128,7 @@ function currentCrew() {
 }
 const crewQuery = crew => SIDE === "earth" ? `crew=${crew}` : "";
 function pageUrl(page, params = {}) {
+  if (DAY_OVERRIDE) params = { ...params, day: DAY_OVERRIDE };
   const query = new URLSearchParams(Object.entries(params).filter(([, v]) => v)).toString();
   return page + (query ? "?" + query : "");
 }
@@ -106,12 +148,12 @@ function renderTopbar(active) {
   where.value = SIDE;
   where.addEventListener("change", () => {
     const page = location.pathname.split("/").pop() || "index.html";
-    location.href = `../${where.value}/${page}`;
+    location.href = `../${where.value}/${page}${location.search}`;
   });
   // 실제 시각으로 1초마다 갱신. 화성 화면은 통신 간격만큼 늦다
   const clock = el("span", "clock");
   clock.title = SIDE === "mars" ? `Mars clock · ${LINK_DELAY_MS / 60000} min behind Earth` : "Earth clock";
-  const tick = () => { clock.textContent = `UTC ${fmtUtc(sideNow())}`; };
+  const tick = () => { clock.textContent = `UTC ${missionNow()}`; };
   tick();
   setInterval(tick, 1000);
   document.getElementById("topbar").replaceChildren(
@@ -134,13 +176,15 @@ function writeStore(key, list) {
   try { localStorage.setItem("dashboard." + key, JSON.stringify(list)); } catch {}
 }
 
-// 대원별 1:1 대화. A 대원은 시안의 예시 대화로 시작한다
+// 대원별 1:1 대화. A 대원은 시안의 예시 대화로 시작한다.
+// 예시 대화(12:13~12:30)가 미래 시각이 되지 않도록, 지금이 12:30 전이면 전날 대화로 둔다
+const DEMO_DAY = NOW.slice(11) >= "12:30" ? NOW.slice(0, 10) : addDays(NOW.slice(0, 10), -1);
 const DEMO_THREADS = {
   A: [
     { from: "crew", time: "12:13", note: "Delivered", attached: true, sleepQuestion: true },
     { from: "doctor", time: "12:25", note: "Example physician reply",
       text: "Thanks for sharing your record. I’ve received it. Please tell me how you’re feeling now." },
-    { from: "crew", time: "12:30", note: "Waiting to send",
+    { from: "crew", time: "12:30", note: "Delivered",
       text: "I’m still feeling tired. I’ve opened the saved sleep guidance." },
   ],
 };

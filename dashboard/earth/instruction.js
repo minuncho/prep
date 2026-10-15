@@ -5,8 +5,8 @@ const TODAY = NOW.slice(0, 10);
 const CREW = currentCrew();
 
 function renderStatus(records) {
-  const tst = records.find(b => b.Biomarker === "TST");
-  const se = records.find(b => b.Biomarker === "SE");
+  const tst = latest(records, "TST");
+  const se = latest(records, "SE");
   const list = document.getElementById("status");
   if (!tst) {
     list.replaceChildren(el("li", "", "Awaiting health data"), el("li", "", "No measurements supplied"));
@@ -17,7 +17,7 @@ function renderStatus(records) {
     el("li", status.cls, tst.Status === "정상" ? "Sleep looks normal" : `! ${status.label} sleep alert`),
     el("li", "", `Sleep duration: ${tst.Figure} h`),
     ...(se ? [el("li", "", `Sleep efficiency: ${se.Figure}%`)] : []),
-    el("li", "faint", `${dayLabel(TODAY)} ${tst.timestamp.slice(11, 16)} UTC`),
+    el("li", "faint", `${dayLabel(tst.timestamp.slice(0, 10))} ${tst.timestamp.slice(11, 16)} UTC`),
   );
 }
 
@@ -34,7 +34,7 @@ function renderRecent(records, instructions) {
     );
     return;
   }
-  const guide = guideFor(worstSleepCheck(records), instructions);
+  const guide = guideFor(worstSleepCheck(recent(records)), instructions);
   box.replaceChildren(...(guide ? [
     el("p", "faint", "Sleep recovery · Example instruction"),
     el("p", "body", guide.Instruction),
@@ -58,7 +58,7 @@ async function init() {
   let records = [], instructions = [];
   try {
     const [biomarkers, guides] = await Promise.all([loadCsv(BIOMARKER_CSV), loadCsv(INSTRUCTION_CSV)]);
-    records = CREW === BIOMARKER_CREW ? biomarkers.filter(b => b.timestamp.startsWith(TODAY) && b.timestamp <= NOW) : [];
+    records = CREW === BIOMARKER_CREW ? biomarkers : [];
     instructions = guides;
   } catch (err) {
     console.error(err);

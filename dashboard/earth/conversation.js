@@ -10,9 +10,9 @@ function renderMessage(m) {
   msg.append(
     el("div", "from", mine ? "You — Ground doctor" : `Crew member ${CREW}`),
     el("div", "", m.text),
-    el("div", "meta", `${m.stored ? "UTC" : dayLabel(TODAY)} ${m.time} · ${m.note}`),
+    el("div", "meta", `${m.stored ? "UTC" : dayLabel(DEMO_DAY)} ${m.time} · ${m.note}`),
   );
-  return m.attached ? [msg, el("div", "attached", `Attached: sleep check · ${dayLabel(TODAY)}`)] : [msg];
+  return m.attached ? [msg, el("div", "attached", `Attached: sleep check · ${dayLabel(DEMO_DAY)}`)] : [msg];
 }
 
 function renderCrewList(tst) {
@@ -31,7 +31,7 @@ function renderCrewList(tst) {
 }
 
 function renderThread(tst) {
-  const date = longDate(TODAY, { weekday: "long", month: "long", day: "numeric" });
+  const date = longDate(DEMO_DAY, { weekday: "long", month: "long", day: "numeric" });
   const thread = loadThread(CREW, tst);
   document.getElementById("thread").replaceChildren(
     el("p", "notice", "Messages may take time to reach the crew. We’ll show you when they arrive."),
@@ -52,7 +52,7 @@ async function init() {
   let tst = null;
   try {
     const biomarkers = await loadCsv(BIOMARKER_CSV);
-    tst = biomarkers.find(b => b.timestamp.startsWith(TODAY) && b.Biomarker === "TST") || null;
+    tst = latest(biomarkers, "TST");
   } catch (err) {
     console.error(err);
   }

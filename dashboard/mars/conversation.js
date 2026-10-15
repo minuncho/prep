@@ -14,7 +14,7 @@ function renderShared(tst) {
     return;
   }
   const status = STATUS[tst.Status];
-  when.textContent = `${dayLabel(TODAY)} · ${tst.timestamp.slice(11, 16)}`;
+  when.textContent = `${dayLabel(tst.timestamp.slice(0, 10))} · ${tst.timestamp.slice(11, 16)}`;
   value.className = status.cls || "muted";
   value.textContent = `${tst.Figure} hours · ${status.label}`;
 }
@@ -26,13 +26,13 @@ function renderMessage(m) {
   msg.append(
     el("div", "from", mine ? "You" : "Ground doctor"),
     el("div", "", m.text),
-    el("div", "meta", `${m.stored ? "UTC" : dayLabel(TODAY)} ${m.time} · ${m.note}`),
+    el("div", "meta", `${m.stored ? "UTC" : dayLabel(DEMO_DAY)} ${m.time} · ${m.note}`),
   );
-  return m.attached ? [msg, el("div", "attached", `Attached: sleep check · ${dayLabel(TODAY)}`)] : [msg];
+  return m.attached ? [msg, el("div", "attached", `Attached: sleep check · ${dayLabel(DEMO_DAY)}`)] : [msg];
 }
 
 function renderThread(tst) {
-  const date = longDate(TODAY, { weekday: "long", month: "long", day: "numeric" });
+  const date = longDate(DEMO_DAY, { weekday: "long", month: "long", day: "numeric" });
   document.getElementById("thread").replaceChildren(
     el("p", "notice", "Messages may take time to reach Earth. We’ll show you when they arrive."),
     el("p", "date", `${date} · Demo conversation`),
@@ -46,7 +46,7 @@ async function init() {
   let tst = null;
   try {
     const biomarkers = await loadCsv(BIOMARKER_CSV);
-    tst = biomarkers.find(b => b.timestamp.startsWith(TODAY) && b.Biomarker === "TST") || null;
+    tst = latest(biomarkers, "TST");
   } catch (err) {
     console.error(err);
   }

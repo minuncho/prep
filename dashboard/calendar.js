@@ -1,4 +1,5 @@
-// 주간 캘린더 화면 (화성·지구 공용). 일정은 event_dummy.csv, 수면 수치는 A_dummy120.csv에서 읽는다.
+// 주간 캘린더 화면 (화성·지구 공용). 일정은 event_dummy.csv, 수면 수치는 A_dummy120.csv,
+// 항목 분류·설명은 biomarkers.csv에서 읽는다.
 // 지구 화면에는 대원 카드, 검토 필요 목록, 대원 선택 탭이 더 있다.
 
 const DOW = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
@@ -8,7 +9,9 @@ const TODAY = NOW.slice(0, 10);
 const state = {
   events: [],
   biomarkers: [],
-  weekStart: MISSION_START,
+  info: {},
+  // 오늘이 들어 있는 주 (미션 1일부터 7일 단위)
+  weekStart: addDays(MISSION_START, Math.floor((missionDay(TODAY) - 1) / 7) * 7),
   filter: "all",
   crew: currentCrew(),
 };
@@ -20,7 +23,7 @@ function eventsOn(date) {
 
 function biomarker(date, name, crew = state.crew) {
   if (crew !== BIOMARKER_CREW) return null;
-  return state.biomarkers.find(b => b.timestamp.startsWith(date) && b.Biomarker === name) || null;
+  return state.biomarkers.find(b => b.timestamp.startsWith(date) && b.Biomarker === name && measured(b)) || null;
 }
 
 const isMeal = e => /meal/i.test(e.activity_summary);
@@ -73,12 +76,11 @@ function renderDay(date) {
   return day;
 }
 
-// 오늘 기록을 최신순으로
+// 최근 24시간 기록을 최신순으로
 function renderLog() {
-  document.getElementById("log-sub").textContent = `${dayLabel(TODAY)} · Latest records first`;
+  document.getElementById("log-sub").textContent = "Last 24 hours · Latest records first";
 
-  const records = state.crew !== BIOMARKER_CREW ? [] : state.biomarkers
-    .filter(b => b.timestamp.startsWith(TODAY))
+  const records = state.crew !== BIOMARKER_CREW ? [] : recent(state.biomarkers)
     .sort((a, b) => b.timestamp.localeCompare(a.timestamp));
 
   const body = document.getElementById("log");
@@ -93,10 +95,16 @@ function renderLog() {
   body.replaceChildren(...records.map(b => {
     const check = HEALTH_CHECKS[b.Biomarker] || { label: b.Biomarker, unit: "" };
     const status = STATUS[b.Status];
+    const info = state.info[b.Biomarker];
+    const name = el("td", "", check.label);
+    if (info) {
+      name.append(el("small", "category", info.Category));
+      name.title = info.biomarker_summary;
+    }
     const row = el("tr");
     row.append(
-      el("td", "", `${dayLabel(TODAY)} ${b.timestamp.slice(11, 16)}`),
-      el("td", "", check.label),
+      el("td", "", `${dayLabel(b.timestamp.slice(0, 10))} ${b.timestamp.slice(11, 16)}`),
+      name,
       el("td", status.cls, `${b.Figure}${check.unit} · ${status.label}`),
     );
     return row;
@@ -105,7 +113,7 @@ function renderLog() {
 
 // 가장 최근 메시지 한 개
 function renderRecent() {
-  const thread = loadThread(state.crew, biomarker(TODAY, "TST"));
+  const thread = loadThread(state.crew, state.crew === BIOMARKER_CREW ? latest(state.biomarkers, "TST") : null);
   const last = thread[thread.length - 1];
   const other = SIDE === "earth" ? "crew" : "doctor";
   const lastFromOther = [...thread].reverse().find(m => m.from === other);
@@ -117,7 +125,7 @@ function renderRecent() {
   if (!shown) {
     bubble.replaceChildren(el("div", "when", "No messages yet"), document.createTextNode("Start a 1:1 conversation."));
   } else {
-    const when = shown.stored ? `UTC ${shown.time}` : `${dayLabel(TODAY)} ${shown.time} UTC`;
+    const when = shown.stored ? `UTC ${shown.time}` : `${dayLabel(DEMO_DAY)} ${shown.time} UTC`;
     bubble.replaceChildren(el("div", "when", when), document.createTextNode(shown.text));
   }
   document.getElementById("recent-link").href = pageUrl("conversation.html", { crew: SIDE === "earth" ? state.crew : "" });
@@ -129,8 +137,9 @@ function renderCrewOverview() {
   if (!cards) return;
 
   cards.replaceChildren(...CREWS.map(crew => {
-    const tst = biomarker(TODAY, "TST", crew);
-    const se = biomarker(TODAY, "SE", crew);
+    const own = crew === BIOMARKER_CREW ? state.biomarkers : [];
+    const tst = latest(own, "TST");
+    const se = latest(own, "SE");
     const card = el("a", "crew-card" + (crew === state.crew ? " selected" : ""));
     card.href = pageUrl("index.html", { crew });
     card.append(el("div", "name", `Crew ${crew}`));
@@ -139,7 +148,7 @@ function renderCrewOverview() {
       card.append(
         el("div", "state " + status.cls, tst.Status === "정상" ? "Sleep looks normal" : `${status.label} sleep alert`),
         el("div", "muted", `Sleep ${tst.Figure} h` + (se ? ` · Efficiency ${se.Figure}%` : "")),
-        el("div", "muted small", `${dayLabel(TODAY)} ${tst.timestamp.slice(11, 16)} UTC`),
+        el("div", "muted small", `${dayLabel(tst.timestamp.slice(0, 10))} ${tst.timestamp.slice(11, 16)} UTC`),
       );
     } else {
       card.append(
@@ -152,14 +161,16 @@ function renderCrewOverview() {
   }));
 
   const flagged = CREWS.flatMap(crew => {
-    const checks = ["TST", "SE", "WASO"].map(n => biomarker(TODAY, n, crew)).filter(b => b && b.Status !== "정상");
+    const checks = crew !== BIOMARKER_CREW ? [] : recent(state.biomarkers)
+      .filter(b => b.Status !== "정상")
+      .sort((a, b) => SEVERITY[b.Status] - SEVERITY[a.Status]);
     if (!checks.length) return [];
-    const text = checks.map(b => `${HEALTH_CHECKS[b.Biomarker].label} ${b.Figure}${HEALTH_CHECKS[b.Biomarker].unit}`).join("  |  ");
+    const text = checks.map(b => `${checkLabel(b.Biomarker)} ${b.Figure}${(HEALTH_CHECKS[b.Biomarker] || { unit: "" }).unit}`).join("  |  ");
     const row = el("a", "review-row", `Crew ${crew}  ·  ${text}`);
-    row.href = pageUrl("daily.html", { date: TODAY, crew });
+    row.href = pageUrl("daily.html", { date: checks[0].timestamp.slice(0, 10), crew });
     return [row];
   });
-  document.getElementById("review").replaceChildren(...(flagged.length ? flagged : [el("p", "muted", "Nothing needs review today.")]));
+  document.getElementById("review").replaceChildren(...(flagged.length ? flagged : [el("p", "muted", "Nothing needs review in the last 24 hours.")]));
 
   for (const tab of document.querySelectorAll("#crew-tabs a")) {
     tab.href = pageUrl("index.html", { crew: tab.dataset.crew });
@@ -178,7 +189,8 @@ async function init() {
   renderTopbar("calendar");
 
   try {
-    [state.events, state.biomarkers] = await Promise.all([loadCsv(EVENTS_CSV), loadCsv(BIOMARKER_CSV)]);
+    [state.events, state.biomarkers, state.info] =
+      await Promise.all([loadEvents(), loadCsv(BIOMARKER_CSV), loadBiomarkerInfo()]);
   } catch (err) {
     document.getElementById("week").textContent =
       `Could not load data (${err.message}). Serve the prep folder over HTTP.`;

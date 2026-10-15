@@ -355,3 +355,9 @@ body.onboarding { display: grid; min-height: 100vh; place-items: center; padding
 @media (max-width: 1000px) {
   .roles, .crew-cards { grid-template-columns: 1fr; }
 }
+
+/* biomarkers.csv 분류 표시 */
+td small.category { display: block; margin-top: 2px; color: var(--faint); font-size: 11px; }
+.others { margin-top: 20px; }
+.check-group h3 { margin: 18px 0 0; color: var(--muted); font-size: 13px; font-weight: 500; }
+.check-group .check { margin-top: 8px; }

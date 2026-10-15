@@ -4,31 +4,33 @@
 const TODAY = NOW.slice(0, 10);
 const state = { items: [], kind: "", query: "" };
 
-function buildItems(biomarkers, instructions) {
-  const records = biomarkers.filter(b => b.timestamp.startsWith(TODAY) && b.timestamp <= NOW);
+function buildItems(biomarkers, instructions, info) {
+  const records = recent(biomarkers);
 
   const guidance = records.filter(b => b.Status !== "정상").flatMap(b => {
     const guide = instructions.find(i => i.biomarker === b.Biomarker && i.Status === b.Status);
     if (!guide) return [];
-    const label = (HEALTH_CHECKS[b.Biomarker] || { label: b.Biomarker }).label;
+    const label = checkLabel(b.Biomarker);
     const status = STATUS[b.Status];
     return [{
       kind: "Care guidance",
       name: `${label} · ${status.label}`,
       cls: status.cls,
       body: guide.Instruction,
-      source: `${dayLabel(TODAY)} ${b.timestamp.slice(11, 16)} · Based on instruction.csv`,
+      about: info[b.Biomarker] ? info[b.Biomarker].biomarker_summary : "",
+      source: `${dayLabel(b.timestamp.slice(0, 10))} ${b.timestamp.slice(11, 16)} · ${b.Figure} · ` +
+        (info[b.Biomarker] ? `${info[b.Biomarker].Category} · ` : "") + "Based on instruction.csv",
     }];
   });
 
-  const tst = records.find(b => b.Biomarker === "TST");
-  const se = records.find(b => b.Biomarker === "SE");
+  const tst = latest(biomarkers, "TST");
+  const se = latest(biomarkers, "SE");
   const health = tst ? [{
     kind: "My health",
-    name: `Your sleep check on ${longDate(TODAY, { month: "long", day: "numeric" })} →`,
+    name: `Your sleep check on ${longDate(tst.timestamp.slice(0, 10), { month: "long", day: "numeric" })} →`,
     href: "daily.html",
     body: `Time asleep: ${tst.Figure} hours` + (se ? ` · Sleep efficiency: ${se.Figure}%` : ""),
-    source: `${dayLabel(TODAY)} ${tst.timestamp.slice(11, 16)} · A_dummy120.csv`,
+    source: `${dayLabel(tst.timestamp.slice(0, 10))} ${tst.timestamp.slice(11, 16)} · A_dummy120.csv`,
   }] : [];
 
   // 의사가 지구 화면에서 저장한 안내
@@ -53,7 +55,7 @@ function render() {
   const q = state.query.toLowerCase();
   const shown = state.items.filter(i =>
     (!state.kind || i.kind === state.kind) &&
-    (!q || `${i.kind} ${i.name} ${i.body}`.toLowerCase().includes(q)));
+    (!q || `${i.kind} ${i.name} ${i.body} ${i.about || ""}`.toLowerCase().includes(q)));
 
   document.getElementById("items").replaceChildren(...(shown.length ? shown.map(i => {
     const item = el(i.href ? "a" : "div", "item");
@@ -72,8 +74,9 @@ async function init() {
   renderTopbar("instruction");
 
   try {
-    const [biomarkers, instructions] = await Promise.all([loadCsv(BIOMARKER_CSV), loadCsv(INSTRUCTION_CSV)]);
-    state.items = buildItems(biomarkers, instructions);
+    const [biomarkers, instructions, info] =
+      await Promise.all([loadCsv(BIOMARKER_CSV), loadCsv(INSTRUCTION_CSV), loadBiomarkerInfo()]);
+    state.items = buildItems(biomarkers, instructions, info);
   } catch (err) {
     document.getElementById("items").replaceChildren(el("p", "none", `Could not load data (${err.message}).`));
     return;
