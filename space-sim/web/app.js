@@ -6,7 +6,7 @@ import init, { Sim } from './pkg/space_sim.js';
 const LINK_BYTES_PER_SEC = 10 * 1024;     // 링크 속도 (테스트용 값)
 const TX_DELAY_MS = 22 * 60000;           // 편도 전송 지연
 const CLOCK_LAG_MS_MARS = 22 * 60000;     // 화성 시계가 늦은 정도
-const COLD_EVERY_MS = 60 * 60000;         // A_cold 정각 발송 주기
+const COLD_EVERY_MS = 20 * 60000;         // A_cold 정각 발송 주기 (00·20·40분)
 const PRIO_EVERY_MS = 1000;               // A_priority 발송 주기
 const PLAY_INTERVAL_MS = 10;              // 원본 1행 출력 간격 (1초에 최대 100행)
 const ZSTD_LEVEL = 3;
