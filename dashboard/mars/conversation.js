@@ -1,5 +1,5 @@
 // 화성 — 의사와의 대화. 공유된 수면 기록은 A_dummy120.csv에서 읽는다.
-// 대화는 브라우저 저장소에 대원별로 저장되어 지구(의사) 화면과 같이 쓴다.
+// 대화는 브라우저 저장소에 대원별로 저장되어 지구(의사) 화면과 같이 쓰고, 상대에게는 LINK_DELAY_MS 뒤에 보인다.
 
 const TODAY = NOW.slice(0, 10);
 const CREW = BIOMARKER_CREW;
@@ -26,7 +26,7 @@ function renderMessage(m) {
   msg.append(
     el("div", "from", mine ? "You" : "Ground doctor"),
     el("div", "", m.text),
-    el("div", "meta", `${dayLabel(TODAY)} ${m.time} · ${m.note}`),
+    el("div", "meta", `${m.stored ? "UTC" : dayLabel(TODAY)} ${m.time} · ${m.note}`),
   );
   return m.attached ? [msg, el("div", "attached", `Attached: sleep check · ${dayLabel(TODAY)}`)] : [msg];
 }
@@ -52,6 +52,8 @@ async function init() {
   }
   renderShared(tst);
   renderThread(tst);
+  // 지구에서 보낸 메시지가 도착하면 보이도록 주기적으로 다시 그린다
+  setInterval(() => renderThread(tst), 15000);
 
   const draft = document.getElementById("draft");
   document.getElementById("composer").addEventListener("submit", e => {

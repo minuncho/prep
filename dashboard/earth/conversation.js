@@ -10,7 +10,7 @@ function renderMessage(m) {
   msg.append(
     el("div", "from", mine ? "You — Ground doctor" : `Crew member ${CREW}`),
     el("div", "", m.text),
-    el("div", "meta", `${dayLabel(TODAY)} ${m.time} · ${m.note}`),
+    el("div", "meta", `${m.stored ? "UTC" : dayLabel(TODAY)} ${m.time} · ${m.note}`),
   );
   return m.attached ? [msg, el("div", "attached", `Attached: sleep check · ${dayLabel(TODAY)}`)] : [msg];
 }
@@ -59,6 +59,8 @@ async function init() {
   const crewTst = CREW === BIOMARKER_CREW ? tst : null;
   renderCrewList(tst);
   renderThread(crewTst);
+  // 화성에서 보낸 메시지가 도착하면 보이도록 주기적으로 다시 그린다
+  setInterval(() => { renderCrewList(tst); renderThread(crewTst); }, 15000);
 
   document.getElementById("composer").addEventListener("submit", e => {
     e.preventDefault();

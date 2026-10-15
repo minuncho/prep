@@ -11,9 +11,16 @@ const SIDE = location.pathname.includes("/earth/") ? "earth" : "mars";
 const CREWS = ["A", "B", "C", "D"];
 const BIOMARKER_CREW = "A"; // 생체 데이터는 A 대원 것만 있다
 
-// 디자인 시안의 "지금" (UTC 2026-01-04 12:30, SOL 004)
+// 데이터 기준 "오늘" (DAY 004). 더미 데이터가 2026년 1~4월이라 화면의 기록은 이 날짜를 기준으로 보여준다
 const MISSION_START = "2026-01-01";
 const NOW = "2026-01-04 12:30";
+
+// 지구↔화성 통신 간격. 메시지·안내는 이만큼 늦게 도착하고, 화성 시계는 이만큼 늦게 간다 (space-sim과 같은 방식)
+const LINK_DELAY_MS = 20 * 60000;
+const CLOCK_LAG_MS = SIDE === "mars" ? LINK_DELAY_MS : 0;
+const sideNow = () => Date.now() - CLOCK_LAG_MS;
+// ms → "YYYY-MM-DD HH:MM:SS" (UTC)
+const fmtUtc = ms => new Date(ms).toISOString().slice(0, 19).replace("T", " ");
 
 const STATUS = {
   "정상": { label: "Normal", cls: "" },
@@ -101,11 +108,17 @@ function renderTopbar(active) {
     const page = location.pathname.split("/").pop() || "index.html";
     location.href = `../${where.value}/${page}`;
   });
+  // 실제 시각으로 1초마다 갱신. 화성 화면은 통신 간격만큼 늦다
+  const clock = el("span", "clock");
+  clock.title = SIDE === "mars" ? `Mars clock · ${LINK_DELAY_MS / 60000} min behind Earth` : "Earth clock";
+  const tick = () => { clock.textContent = `UTC ${fmtUtc(sideNow())}`; };
+  tick();
+  setInterval(tick, 1000);
   document.getElementById("topbar").replaceChildren(
     link("My Calendar", "index.html", "calendar"),
     link("Health Instruction", "instruction.html", "instruction"),
     el("span", "spacer"),
-    el("span", "clock", `UTC ${NOW}`),
+    clock,
     el("span", "clock", "SOL " + String(missionDay(NOW.slice(0, 10))).padStart(3, "0")),
     where,
     link("Profile", "profile.html", "profile"),
@@ -131,25 +144,40 @@ const DEMO_THREADS = {
       text: "I’m still feeling tired. I’ve opened the saved sleep guidance." },
   ],
 };
+// 저장된 메시지는 보낸 쪽에서 LINK_DELAY_MS 뒤에 받는 쪽에 보인다
+const ROLE = SIDE === "earth" ? "doctor" : "crew";
+const arrived = m => !m.sentAt || Date.now() >= m.sentAt + LINK_DELAY_MS;
+function deliveryNote(m) {
+  if (arrived(m)) return m.sentAt ? "Delivered" : m.note;
+  const min = Math.ceil((m.sentAt + LINK_DELAY_MS - Date.now()) / 60000);
+  return `Sending · arrives in ${min} min`;
+}
 function loadThread(crew, tst) {
-  return [...(DEMO_THREADS[crew] || []), ...readStore(`thread.${crew}`)].map(m => m.sleepQuestion ? {
+  const stored = readStore(`thread.${crew}`)
+    .filter(m => m.from === ROLE || arrived(m))
+    .map(m => ({ ...m, note: deliveryNote(m), stored: true }));
+  return [...(DEMO_THREADS[crew] || []), ...stored].map(m => m.sleepQuestion ? {
     ...m,
     text: tst
       ? `I slept ${tst.Figure} hours last night and still feel tired. Could you check my sleep record?`
       : "I still feel tired. Could you check my sleep record?",
   } : m);
 }
+// 메시지 시각은 보낸 쪽 시계 기준 (UTC HH:MM)
 function addMessage(crew, from, text) {
   const list = readStore(`thread.${crew}`);
-  list.push({ from, time: NOW.slice(11), text, note: "Waiting to send" });
+  list.push({ from, text, sentAt: Date.now(), time: fmtUtc(sideNow()).slice(11, 16) });
   writeStore(`thread.${crew}`, list);
 }
 
 // 의사가 대원에게 보낸 안내. 우주인 화면의 Health Instruction에 나타난다
-const loadInstructions = crew => readStore(`instructions.${crew}`);
+// 화성 화면에는 도착한 것만 보인다
+const loadInstructions = crew => readStore(`instructions.${crew}`)
+  .filter(n => SIDE === "earth" || arrived(n))
+  .map(n => ({ ...n, note: deliveryNote(n) }));
 function addInstruction(crew, title, body) {
   const list = readStore(`instructions.${crew}`);
-  list.push({ title, body, time: NOW.slice(11) });
+  list.push({ title, body, sentAt: Date.now(), time: fmtUtc(sideNow()).slice(11, 16) });
   writeStore(`instructions.${crew}`, list);
 }
 

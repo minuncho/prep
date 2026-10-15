@@ -36,7 +36,7 @@ function buildItems(biomarkers, instructions) {
     kind: "Doctor’s notes",
     name: n.title,
     body: n.body,
-    source: `${dayLabel(TODAY)} ${n.time} · Shared by your ground doctor`,
+    source: `UTC ${n.time} · Shared by your ground doctor`,
   }));
   const notes = saved.length ? saved : [{
     kind: "Doctor’s notes",

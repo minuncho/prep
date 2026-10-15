@@ -117,7 +117,8 @@ function renderRecent() {
   if (!shown) {
     bubble.replaceChildren(el("div", "when", "No messages yet"), document.createTextNode("Start a 1:1 conversation."));
   } else {
-    bubble.replaceChildren(el("div", "when", `${dayLabel(TODAY)} ${shown.time} UTC`), document.createTextNode(shown.text));
+    const when = shown.stored ? `UTC ${shown.time}` : `${dayLabel(TODAY)} ${shown.time} UTC`;
+    bubble.replaceChildren(el("div", "when", when), document.createTextNode(shown.text));
   }
   document.getElementById("recent-link").href = pageUrl("conversation.html", { crew: SIDE === "earth" ? state.crew : "" });
 }

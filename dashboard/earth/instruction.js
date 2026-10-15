@@ -28,9 +28,9 @@ function renderRecent(records, instructions) {
   const box = document.getElementById("recent");
   if (last) {
     box.replaceChildren(
-      el("p", "faint", `${last.title} · Saved ${dayLabel(TODAY)} ${last.time}`),
+      el("p", "faint", `${last.title} · Saved UTC ${last.time}`),
       el("p", "body", last.body),
-      el("p", "faint", "Shared with the crew member"),
+      el("p", "faint", last.note === "Delivered" ? "Delivered to the crew member" : last.note),
     );
     return;
   }
@@ -72,7 +72,7 @@ async function init() {
     e.preventDefault();
     addInstruction(CREW, title.value.trim(), body.value.trim());
     title.value = body.value = "";
-    document.getElementById("note-result").textContent = `Shared with Crew ${CREW}`;
+    document.getElementById("note-result").textContent = `Sent to Crew ${CREW} · arrives in ${LINK_DELAY_MS / 60000} min`;
     renderRecent(records, instructions);
   });
 }
