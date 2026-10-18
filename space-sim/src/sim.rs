@@ -16,7 +16,7 @@ const COLD_HEADER: &str = "Biomarker,count,min,max,mean,start_timestamp,end_time
 const LOG_LIMIT: usize = 100;
 
 pub fn is_priority(status: &str) -> bool {
-    status == "위험" || status == "경고"
+    status == "Critical" || status == "Warning"
 }
 
 // ---------- 설정 ----------
@@ -44,7 +44,7 @@ pub struct Config {
 pub enum Kind {
     /// 이상치 행: 항상 먼저 전송
     Priority,
-    /// 정상 요약, blocks.csv 등
+    /// Normal 요약, blocks.csv 등
     Bulk,
 }
 
@@ -265,7 +265,7 @@ pub struct Sim {
     /// 화면에 남아 있는 원본 (보관 기간 안)
     hot: VecDeque<Row>,
     latest_ts: Option<i64>,
-    /// 바이오마커별 정상 요약 누적 (O(1) 갱신)
+    /// 바이오마커별 Normal 요약 누적 (O(1) 갱신)
     summary: BTreeMap<String, Acc>,
 
     /// hot에 들어온 원본 누적 (CSV 줄 단위)
@@ -429,8 +429,8 @@ impl Sim {
         for r in &rows {
             self.absorbed_rows += 1;
             *per.entry(r.biomarker.clone()).or_insert(0) += 1;
-            // 요약은 정상 행만
-            if r.status == "정상" && r.figure.is_finite() {
+            // 요약은 Normal 행만
+            if r.status == "Normal" && r.figure.is_finite() {
                 self.add_summary(r);
             }
         }
@@ -748,10 +748,10 @@ mod tests {
     }
 
     const CSV: &str = "\u{feff}timestamp,Biomarker,Figure,Status\n\
-2026-01-01 00:00,TST,7,정상\n\
-2026-01-01 00:00,SL,15,경고\n\
-2026-01-01 00:00,TST,8,정상\n\
-2026-01-01 00:02,TST,9,정상\n";
+2026-01-01 00:00,TST,7,Normal\n\
+2026-01-01 00:00,SL,15,Warning\n\
+2026-01-01 00:00,TST,8,Normal\n\
+2026-01-01 00:02,TST,9,Normal\n";
 
     #[test]
     fn parses_bom_and_timestamps() {
@@ -776,7 +776,7 @@ mod tests {
     fn context_marks_first_rows_of_anomaly_biomarkers() {
         let mut rows = parse_csv(CSV, TZ).unwrap();
         mark_context(&mut rows);
-        // SL은 경고 행이 있으니 처음 3행 맥락. SL은 1행뿐이라 그 행만.
+        // SL은 Warning 행이 있으니 처음 3행 맥락. SL은 1행뿐이라 그 행만.
         assert!(rows[1].ctx);
         // TST에는 이상치가 없으니 맥락 표시 없음
         assert!(!rows[0].ctx);
@@ -791,7 +791,7 @@ mod tests {
         while sim.playing {
             sim.play_step();
         }
-        // 출력이 끝나면 hot 전부 요약 반영. TST 정상 3개(7,8,9), SL은 경고라 요약 제외
+        // 출력이 끝나면 hot 전부 요약 반영. TST Normal 3개(7,8,9), SL은 Warning이라 요약 제외
         let snap = sim.snapshot(0);
         let cold = snap["coldRows"].as_array().unwrap();
         assert_eq!(cold.len(), 1);
@@ -810,7 +810,7 @@ mod tests {
         while sim.playing {
             sim.play_step();
         }
-        // SL 경고 1행 (맥락 처리는 SL 처음 3행 = 1행 전부)
+        // SL Warning 1행 (맥락 처리는 SL 처음 3행 = 1행 전부)
         let snap = sim.snapshot(0);
         assert_eq!(snap["prioTotal"], 1);
         assert_eq!(snap["prioRows"][0][4], "Anomaly");
@@ -835,7 +835,7 @@ mod tests {
         let mut sim = Sim::new(cfg(true), 0);
         let mut csv = String::from("timestamp,Biomarker,Figure,Status\n");
         for s in 0..120 {
-            csv.push_str(&format!("2026-01-01 00:{:02}:{:02},X,1,정상\n", s / 60, s % 60));
+            csv.push_str(&format!("2026-01-01 00:{:02}:{:02},X,1,Normal\n", s / 60, s % 60));
         }
         sim.load(&csv).unwrap();
         sim.set_playing(true);

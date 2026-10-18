@@ -58,7 +58,7 @@ const loadCrew = document.getElementById("load-crew");
 if (loadCrew) {
   loadCrew.addEventListener("click", async () => {
     const events = await loadCsv(EVENTS_CSV);
-    values.crews = [...new Set(events.flatMap(e => e.Member.split(",")))].sort();
+    values.crews = [...new Set(events.flatMap(e => e.Crew.split(",")))].sort();
     document.getElementById("crew-loaded").replaceChildren(...values.crews.map(c =>
       el("li", "", `Crew ${c} · ${c === BIOMARKER_CREW ? `${DATA_DAYS} days of measurements` : "Schedule only"}`)));
   });

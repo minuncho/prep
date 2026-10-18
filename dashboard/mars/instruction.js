@@ -1,4 +1,4 @@
-// 화성 — Health Instruction. 지금까지 측정된 오늘 기록(A_data.csv) 중 정상이 아닌 항목에
+// 화성 — Health Instruction. 지금까지 측정된 오늘 기록(A_data.csv) 중 Normal이 아닌 항목에
 // instruction.csv의 안내문을 붙여 보여준다.
 
 const TODAY = NOW.slice(0, 10);
@@ -7,7 +7,7 @@ const state = { items: [], kind: "", query: "" };
 function buildItems(biomarkers, instructions, info) {
   const records = recent(biomarkers);
 
-  const guidance = records.filter(b => b.Status !== "정상").flatMap(b => {
+  const guidance = records.filter(b => b.Status !== "Normal").flatMap(b => {
     const guide = instructions.find(i => i.biomarker === b.Biomarker && i.Status === b.Status);
     if (!guide) return [];
     const label = checkLabel(b.Biomarker);

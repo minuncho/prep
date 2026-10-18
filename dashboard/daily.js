@@ -7,7 +7,7 @@ const CREW = currentCrew();
 const SLEEP_CHECKS = ["Self-reported sleep quality", "TST", "SE", "WASO"];
 // 지구 화면은 의사가 대원 기록을 보는 문구로 바꾼다
 const WHO = SIDE === "earth"
-  ? { sleep: `Crew ${CREW}’s sleep`, slept: `Crew ${CREW} slept`, help: "Review the saved guidance and check in with the crew member." }
+  ? { sleep: `Crew ${CREW}’s sleep`, slept: `Crew ${CREW} slept`, help: `Review the saved guidance and check in with Crew ${CREW}.` }
   : { sleep: "Your sleep", slept: "You slept", help: "Review your saved guidance and ask your doctor for help." };
 
 function renderBanner(tst) {
@@ -20,7 +20,7 @@ function renderBanner(tst) {
     title.textContent = "No sleep measurement was supplied for this day.";
     return;
   }
-  const alert = tst.Status !== "정상";
+  const alert = tst.Status !== "Normal";
   tag.className = "tag" + (alert ? "" : " ok");
   tag.textContent = `${WHO.sleep} ${alert ? "needs attention" : "looks normal"}`;
   document.getElementById("banner-measured").textContent =
@@ -80,7 +80,7 @@ function renderOtherChecks(records, info) {
 }
 
 function renderActivities(events) {
-  const mine = events.filter(e => e.start_timestamp.startsWith(DATE) && e.Member.split(",").includes(CREW));
+  const mine = events.filter(e => e.start_timestamp.startsWith(DATE) && e.Crew.split(",").includes(CREW));
   document.getElementById("activities").replaceChildren(...(mine.length
     ? mine.map(e => el("li", "", `${e.start_timestamp.slice(11, 16)} ${e.activity_summary}`))
     : [el("li", "", "No mission records")]));

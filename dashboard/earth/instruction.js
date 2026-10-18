@@ -14,7 +14,7 @@ function renderStatus(records) {
   }
   const status = STATUS[tst.Status];
   list.replaceChildren(
-    el("li", status.cls, tst.Status === "정상" ? "Sleep looks normal" : `! ${status.label} sleep alert`),
+    el("li", status.cls, tst.Status === "Normal" ? "Sleep looks normal" : `! ${status.label} sleep alert`),
     el("li", "", `Sleep duration: ${tst.Figure} h`),
     ...(se ? [el("li", "", `Sleep efficiency: ${se.Figure}%`)] : []),
     el("li", "faint", `${dayLabel(tst.timestamp.slice(0, 10))} ${tst.timestamp.slice(11, 16)} UTC`),
@@ -30,7 +30,7 @@ function renderRecent(records, instructions) {
     box.replaceChildren(
       el("p", "faint", `${last.title} · Saved UTC ${last.time}`),
       el("p", "body", last.body),
-      el("p", "faint", last.note === "Delivered" ? "Delivered to the crew member" : last.note),
+      el("p", "faint", last.note === "Delivered" ? `Delivered to Crew ${CREW}` : last.note),
     );
     return;
   }
@@ -39,13 +39,13 @@ function renderRecent(records, instructions) {
     el("p", "faint", "Sleep recovery · Example instruction"),
     el("p", "body", guide.Instruction),
     el("p", "faint", "Example content based on instruction.csv"),
-  ] : [el("p", "body", "No instruction has been shared with this crew member yet.")]));
+  ] : [el("p", "body", `No instruction has been shared with Crew ${CREW} yet.`)]));
 }
 
 async function init() {
   renderTopbar("instruction");
   document.getElementById("crew-initial").textContent = CREW;
-  document.getElementById("crew-name").textContent = `Crew member ${CREW}`;
+  document.getElementById("crew-name").textContent = `Crew ${CREW}`;
   document.getElementById("for").textContent = `For Crew ${CREW}`;
   document.getElementById("note-body").placeholder = `Write care steps or follow-up instructions for Crew ${CREW}...`;
   document.getElementById("note-save").textContent = `Save & share with Crew ${CREW}`;

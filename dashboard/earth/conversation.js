@@ -8,7 +8,7 @@ function renderMessage(m) {
   const mine = m.from === "doctor";
   const msg = el("div", "msg " + (mine ? "mine bubble-mine" : "theirs plain"));
   msg.append(
-    el("div", "from", mine ? "You — Ground doctor" : `Crew member ${CREW}`),
+    el("div", "from", mine ? "You — Ground doctor" : `Crew ${CREW}`),
     el("div", "", m.text),
     el("div", "meta", `${m.stored ? "UTC" : dayLabel(DEMO_DAY)} ${m.time} · ${m.note}`),
   );
@@ -44,7 +44,7 @@ async function init() {
   renderTopbar("calendar");
   document.getElementById("title").textContent = `A conversation with Crew ${CREW}.`;
   document.getElementById("avatar").textContent = CREW;
-  document.getElementById("who").textContent = `Crew member ${CREW}`;
+  document.getElementById("who").textContent = `Crew ${CREW}`;
   document.getElementById("team").textContent = `Crew ${CREW} · 1:1 conversation`;
   const draft = document.getElementById("draft");
   draft.placeholder = `Write a message to Crew ${CREW}...`;

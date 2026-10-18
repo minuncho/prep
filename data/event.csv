@@ -1,4 +1,4 @@
-﻿start_timestamp,end_timestamp,activity_type,Member,activity_summary
+﻿start_timestamp,end_timestamp,activity_type,Crew,activity_summary
 2026-10-01 08:15:00,2026-10-01 08:45:00,comm,"A,B,C,D",Morning DPC
 2026-10-01 09:00:00,2026-10-01 09:20:00,medical,"A,B,C,D",Weekly blood draw
 2026-10-01 09:20:00,2026-10-01 09:40:00,medical,"A,B,C,D",Microbiome swab sampling

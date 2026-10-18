@@ -37,9 +37,9 @@ const missionNow = () => fmtUtc(missionMs(sideNow()));
 const NOW = missionNow().slice(0, 16);
 
 const STATUS = {
-  "정상": { label: "Normal", cls: "" },
-  "경고": { label: "Needs attention", cls: "warn" },
-  "위험": { label: "Critical", cls: "alert" },
+  "Normal": { label: "Normal", cls: "" },
+  "Warning": { label: "Needs attention", cls: "warn" },
+  "Critical": { label: "Critical", cls: "alert" },
 };
 // 이름을 풀어 쓰는 수면 항목. 나머지 항목은 CSV의 Biomarker 이름을 그대로 쓴다
 const HEALTH_CHECKS = {
@@ -218,11 +218,11 @@ function addInstruction(crew, title, body) {
 }
 
 // 하루 수면 기록 중 가장 심각한 항목. 심각도가 같으면 수면 시간(TST)이 먼저다
-const SEVERITY = { "정상": 0, "경고": 1, "위험": 2 };
+const SEVERITY = { "Normal": 0, "Warning": 1, "Critical": 2 };
 function worstSleepCheck(records) {
   return ["TST", "SE", "WASO", "Self-reported sleep quality"]
     .map(name => records.find(b => b.Biomarker === name))
-    .filter(b => b && b.Status !== "정상")
+    .filter(b => b && b.Status !== "Normal")
     .sort((a, b) => SEVERITY[b.Status] - SEVERITY[a.Status])[0] || null;
 }
 const guideFor = (record, instructions) =>

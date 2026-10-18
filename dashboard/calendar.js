@@ -18,7 +18,7 @@ const state = {
 
 function eventsOn(date) {
   return state.events.filter(e =>
-    e.start_timestamp.startsWith(date) && e.Member.split(",").includes(state.crew));
+    e.start_timestamp.startsWith(date) && e.Crew.split(",").includes(state.crew));
 }
 
 function biomarker(date, name, crew = state.crew) {
@@ -51,7 +51,7 @@ function renderDay(date) {
 
   const f = state.filter;
   const tst = biomarker(date, "TST");
-  const showSleep = f === "all" || f === "biomarkers" || (f === "alerts" && tst && tst.Status !== "정상");
+  const showSleep = f === "all" || f === "biomarkers" || (f === "alerts" && tst && tst.Status !== "Normal");
   if (showSleep) {
     const status = tst ? STATUS[tst.Status] : null;
     const sleep = el("div", "sleep" + (status ? " " + status.cls : ""));
@@ -67,7 +67,7 @@ function renderDay(date) {
     const list = el("ul");
     for (const e of events) {
       const item = el("li", "", `${e.start_timestamp.slice(11, 16)} ${e.activity_summary}`);
-      item.title = `${e.start_timestamp.slice(11, 16)}–${e.end_timestamp.slice(11, 16)} · ${e.activity_type} · Crew ${e.Member}`;
+      item.title = `${e.start_timestamp.slice(11, 16)}–${e.end_timestamp.slice(11, 16)} · ${e.activity_type} · Crew ${e.Crew}`;
       list.append(item);
     }
     if (!events.length) list.append(el("li", "empty", f === "meals" ? "No meals" : "No mission records"));
@@ -85,7 +85,7 @@ function renderLog() {
 
   const body = document.getElementById("log");
   if (!records.length) {
-    const cell = el("td", "", "No measurements supplied for this crew member.");
+    const cell = el("td", "", `No measurements supplied for Crew ${state.crew}.`);
     cell.colSpan = 3;
     const row = el("tr");
     row.append(cell);
@@ -120,7 +120,7 @@ function renderRecent() {
   const shown = SIDE === "earth" ? last : lastFromOther;
 
   document.getElementById("recent-who").textContent =
-    SIDE === "earth" ? `Crew member ${state.crew} · 1:1 chat` : "Ground doctor · 1:1 chat";
+    SIDE === "earth" ? `Crew ${state.crew} · 1:1 chat` : "Ground doctor · 1:1 chat";
   const bubble = document.getElementById("recent-bubble");
   if (!shown) {
     bubble.replaceChildren(el("div", "when", "No messages yet"), document.createTextNode("Start a 1:1 conversation."));
@@ -146,7 +146,7 @@ function renderCrewOverview() {
     if (tst) {
       const status = STATUS[tst.Status];
       card.append(
-        el("div", "state " + status.cls, tst.Status === "정상" ? "Sleep looks normal" : `${status.label} sleep alert`),
+        el("div", "state " + status.cls, tst.Status === "Normal" ? "Sleep looks normal" : `${status.label} sleep alert`),
         el("div", "muted", `Sleep ${tst.Figure} h` + (se ? ` · Efficiency ${se.Figure}%` : "")),
         el("div", "muted small", `${dayLabel(tst.timestamp.slice(0, 10))} ${tst.timestamp.slice(11, 16)} UTC`),
       );
@@ -154,7 +154,7 @@ function renderCrewOverview() {
       card.append(
         el("div", "state", "Awaiting health data"),
         el("div", "muted", "No measurements supplied"),
-        el("div", "muted small", "Assigned crew member"),
+        el("div", "muted small", "Assigned crew"),
       );
     }
     return card;
@@ -162,7 +162,7 @@ function renderCrewOverview() {
 
   const flagged = CREWS.flatMap(crew => {
     const checks = crew !== BIOMARKER_CREW ? [] : recent(state.biomarkers)
-      .filter(b => b.Status !== "정상")
+      .filter(b => b.Status !== "Normal")
       .sort((a, b) => SEVERITY[b.Status] - SEVERITY[a.Status]);
     if (!checks.length) return [];
     const text = checks.map(b => `${checkLabel(b.Biomarker)} ${b.Figure}${(HEALTH_CHECKS[b.Biomarker] || { unit: "" }).unit}`).join("  |  ");
