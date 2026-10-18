@@ -1,6 +1,7 @@
 // 화면 담당. 로직(재생, 요약, priority 선별, 전송 순서)은 모두 Rust(sim.rs)에 있다.
 // 여기서는 Rust가 준 값을 그리고, 보낼 파일을 zstd로 압축해서 Rust에 돌려준다.
-import init, { Sim } from './pkg/space_sim.js';
+// 용량 비교에는 우주 통신 표준 압축(CCSDS 121, Rust 구현)도 같이 보여준다.
+import init, { Sim, ccsds121Compress } from './pkg/space_sim.js';
 
 // ===== 설정 (두 창이 같은 값을 써야 한다) =====
 const LINK_BYTES_PER_SEC = 10 * 1024;     // 링크 속도 (테스트용 값)
@@ -169,18 +170,20 @@ function fmtBytes(n) {
   return `${(n / 1024 / 1024).toFixed(2)} MB`;
 }
 
-// 용량 비교: 누적 텍스트를 zstd로 압축해서 잰다. 행이 없으면 0 B.
+// 용량 비교: 누적 텍스트를 zstd로 압축해서 잰다. cold는 CCSDS 121로도 잰다. 행이 없으면 0 B.
 function renderSizes() {
   const texts = JSON.parse(sim.sizeTexts());
   const sizeOf = t => {
     if (t === '') return 0;
     return zstdReady ? compress(t).length : null;
   };
+  const ccsdsSizeOf = t => (t === '' ? 0 : ccsds121Compress(new TextEncoder().encode(t)).length);
   const show = v => (v === null ? 'Loading' : fmtBytes(v));
   fillTable('sizeTable', ['Cumulative', 'Size'], [
     ['File total (full raw)', playFileSize ? fmtBytes(playFileSize) : '-'],
     ['hot total (full raw + zstd)', show(sizeOf(texts.hot))],
     ['cold total (summary, zstd)', show(sizeOf(texts.cold))],
+    ['cold total (summary, CCSDS 121)', show(ccsdsSizeOf(texts.cold))],
     ['priority total (zstd only)', show(sizeOf(texts.prio))],
   ]);
 }

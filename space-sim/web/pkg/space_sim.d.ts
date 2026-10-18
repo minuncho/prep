@@ -48,11 +48,17 @@ export class Sim {
     snapshot(now_ms: number): string;
 }
 
+/**
+ * CCSDS 121.0-B-3 무손실 압축 (용량 비교용). 압축된 바이트를 돌려준다.
+ */
+export function ccsds121Compress(data: Uint8Array): Uint8Array;
+
 export type InitInput = RequestInfo | URL | Response | BufferSource | WebAssembly.Module;
 
 export interface InitOutput {
     readonly memory: WebAssembly.Memory;
     readonly __wbg_sim_free: (a: number, b: number) => void;
+    readonly ccsds121Compress: (a: number, b: number) => [number, number];
     readonly sim_blocksCsv: (a: number, b: number) => [number, number];
     readonly sim_dispatch: (a: number, b: number) => [number, number];
     readonly sim_enqueue: (a: number, b: number, c: number, d: number, e: number, f: number) => number;
@@ -66,8 +72,8 @@ export interface InitOutput {
     readonly sim_sizeTexts: (a: number) => [number, number];
     readonly sim_snapshot: (a: number, b: number) => [number, number];
     readonly __wbindgen_externrefs: WebAssembly.Table;
-    readonly __wbindgen_free: (a: number, b: number, c: number) => void;
     readonly __wbindgen_malloc: (a: number, b: number) => number;
+    readonly __wbindgen_free: (a: number, b: number, c: number) => void;
     readonly __wbindgen_realloc: (a: number, b: number, c: number, d: number) => number;
     readonly __externref_table_dealloc: (a: number) => void;
     readonly __wbindgen_start: () => void;

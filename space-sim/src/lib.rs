@@ -1,6 +1,7 @@
 //! 브라우저(WebAssembly) 바인딩. 실제 로직은 sim.rs에 있다.
-//! JS는 이 파일이 내보내는 `Sim`만 호출하고, 화면 그리기와 zstd 압축을 맡는다.
+//! JS는 이 파일이 내보내는 `Sim`과 `ccsds121Compress`를 호출하고, 화면 그리기와 zstd 압축을 맡는다.
 
+mod ccsds;
 mod sim;
 
 use serde_json::json;
@@ -113,4 +114,10 @@ impl Sim {
     pub fn size_texts(&self) -> String {
         self.core.size_texts().to_string()
     }
+}
+
+/// CCSDS 121.0-B-3 무손실 압축 (용량 비교용). 압축된 바이트를 돌려준다.
+#[wasm_bindgen(js_name = ccsds121Compress)]
+pub fn ccsds121_compress(data: &[u8]) -> Vec<u8> {
+    ccsds::compress(data)
 }

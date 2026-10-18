@@ -19,6 +19,17 @@ pub fn is_priority(status: &str) -> bool {
     status == "Critical" || status == "Warning"
 }
 
+/// 예전 파일의 한국어 상태값(정상/경고/위험)도 영어로 맞춰 읽는다
+pub fn normalize_status(s: &str) -> String {
+    match s {
+        "정상" => "Normal",
+        "경고" => "Warning",
+        "위험" => "Critical",
+        other => other,
+    }
+    .to_string()
+}
+
 // ---------- 설정 ----------
 
 #[derive(Clone, Debug)]
@@ -215,7 +226,7 @@ pub fn parse_csv(text: &str, tz: i64) -> Result<Vec<Row>, String> {
             ts,
             biomarker: get(i_bio).to_string(),
             figure: get(i_fig).parse().unwrap_or(f64::NAN),
-            status: i_status.map(|i| get(i).to_string()).unwrap_or_default(),
+            status: i_status.map(|i| normalize_status(get(i))).unwrap_or_default(),
             ctx: false,
             reason: "",
         });
@@ -732,6 +743,18 @@ impl Sim {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn korean_status_values_still_work() {
+        let csv = "timestamp,Biomarker,Figure,Status\n\
+2026-01-01 00:00,TST,7,정상\n\
+2026-01-01 00:00,SL,45,경고\n\
+2026-01-01 00:00,SE,70,위험\n";
+        let rows = parse_csv(csv, 0).unwrap();
+        let st: Vec<&str> = rows.iter().map(|r| r.status.as_str()).collect();
+        assert_eq!(st, ["Normal", "Warning", "Critical"]);
+        assert_eq!(rows.iter().filter(|r| is_priority(&r.status)).count(), 2);
+    }
 
     const TZ: i64 = 0;
 
