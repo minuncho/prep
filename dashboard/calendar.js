@@ -10,8 +10,8 @@ const state = {
   events: [],
   biomarkers: [],
   info: {},
-  // 오늘이 들어 있는 주 (미션 1일부터 7일 단위)
-  weekStart: addDays(MISSION_START, Math.floor((missionDay(TODAY) - 1) / 7) * 7),
+  // 오늘이 들어 있는 주 (월요일 시작, 월~일)
+  weekStart: addDays(TODAY, -((toDate(TODAY).getUTCDay() + 6) % 7)),
   filter: "all",
   crew: currentCrew(),
 };
