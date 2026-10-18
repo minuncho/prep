@@ -130,6 +130,9 @@ select.pill { width: 198px; font-size: 12px; font-weight: 500; }
 /* 하단 두 카드 */
 .bottom { display: grid; grid-template-columns: 884fr 436fr; gap: 24px; margin-top: 28px; }
 .log-scroll { max-height: 236px; margin-top: 12px; overflow-y: auto; }
+/* 카드 제목 오른쪽 버튼 (Data Log → 압축 시뮬레이터) */
+.card-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.card-head .cta { width: auto; height: 36px; margin: 0; padding: 0 18px; font-size: 14px; text-decoration: none; }
 table { width: 100%; border-collapse: collapse; }
 th {
   position: sticky;
