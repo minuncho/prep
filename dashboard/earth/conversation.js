@@ -17,7 +17,7 @@ function renderMessage(m) {
 
 function renderCrewList(tst) {
   document.getElementById("crew-list").replaceChildren(...CREWS.map(crew => {
-    const thread = loadThread(crew, crew === BIOMARKER_CREW ? tst : null);
+    const thread = loadThread(crew, crew === CREW ? tst : null);
     const last = thread[thread.length - 1];
     const item = el("a", "tile crew-item" + (crew === CREW ? " selected" : ""));
     item.href = pageUrl("conversation.html", { crew });
@@ -51,12 +51,12 @@ async function init() {
 
   let tst = null;
   try {
-    const biomarkers = await loadCsv(BIOMARKER_CSV);
+    const biomarkers = await loadCrewData(CREW);
     tst = latest(biomarkers, "TST");
   } catch (err) {
     console.error(err);
   }
-  const crewTst = CREW === BIOMARKER_CREW ? tst : null;
+  const crewTst = tst;
   renderCrewList(tst);
   renderThread(crewTst);
   // 화성에서 보낸 메시지가 도착하면 보이도록 주기적으로 다시 그린다

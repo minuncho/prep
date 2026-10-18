@@ -57,8 +57,8 @@ async function init() {
 
   let records = [], instructions = [];
   try {
-    const [biomarkers, guides] = await Promise.all([loadCsv(BIOMARKER_CSV), loadCsv(INSTRUCTION_CSV)]);
-    records = CREW === BIOMARKER_CREW ? biomarkers : [];
+    const [biomarkers, guides] = await Promise.all([loadCrewData(CREW), loadCsv(INSTRUCTION_CSV)]);
+    records = biomarkers;
     instructions = guides;
   } catch (err) {
     console.error(err);

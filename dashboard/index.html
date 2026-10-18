@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=7">
+<link rel="stylesheet" href="style.css?v=8">
 </head>
 <body class="onboarding">
   <main>
@@ -17,7 +17,16 @@
         <div class="kicker">SPACE WORKSPACE</div>
         <h2>I’m an astronaut</h2>
         <p>View your schedule, health instructions and conversations with your ground doctor.</p>
-        <a class="cta" href="mars/index.html">Continue as astronaut</a>
+        <a class="cta" id="astronaut-continue" href="mars/index.html">Continue as astronaut</a>
+        <div class="crew-pick" id="crew-pick" hidden>
+          <p>Choose your crew.</p>
+          <div class="crew-buttons">
+            <a class="cta" href="mars/index.html?crew=A">Crew A</a>
+            <a class="cta" href="mars/index.html?crew=B">Crew B</a>
+            <a class="cta" href="mars/index.html?crew=C">Crew C</a>
+            <a class="cta" href="mars/index.html?crew=D">Crew D</a>
+          </div>
+        </div>
       </section>
       <section class="card role">
         <div class="kicker">EARTH WORKSPACE</div>
@@ -27,5 +36,13 @@
       </section>
     </div>
   </main>
+  <script>
+    // 우주인을 고르면 크루 A~D 중 하나를 고르게 한다
+    document.getElementById("astronaut-continue").addEventListener("click", e => {
+      e.preventDefault();
+      e.currentTarget.style.display = "none";
+      document.getElementById("crew-pick").hidden = false;
+    });
+  </script>
 </body>
 </html>

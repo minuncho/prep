@@ -36,6 +36,9 @@ cargo build --target wasm32-unknown-unknown --release
 wasm-bindgen --target web --out-dir web/pkg target/wasm32-unknown-unknown/release/space_sim.wasm
 ```
 
+빌드했거나 `web/app.js`를 고쳤으면 `web/index.html`의 `app.js?v=` 숫자를 올린다.
+브라우저가 예전 wasm을 캐시해 두었어도 새 app.js와 섞이지 않는다.
+
 ## 공유 링크 (GitHub Pages)
 
 - 지구 창: https://minuncho.github.io/prep/space-sim/web/index.html?side=earth

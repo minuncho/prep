@@ -31,7 +31,7 @@ function summaryRows() {
     ["Profile & health details", [values.name, values.crewId && `ID ${values.crewId}`].filter(Boolean).join(" · ")],
     ["Current location", [values.location, values.locationDetails].filter(Boolean).join(" · ")],
     ["Time reference", `UTC + ${or(values.sol, "mission-provided Sol reference")}`],
-    ["Imported records", imported ? `${imported.rows} rows from ${imported.name}` : `${values.records || "Mission"} measurements for Crew ${BIOMARKER_CREW}`],
+    ["Imported records", imported ? `${imported.rows} rows from ${imported.name}` : `${values.records || "Mission"} measurements for Crew ${currentCrew()}`],
   ];
 }
 
@@ -60,7 +60,7 @@ if (loadCrew) {
     const events = await loadCsv(EVENTS_CSV);
     values.crews = [...new Set(events.flatMap(e => e.Crew.split(",")))].sort();
     document.getElementById("crew-loaded").replaceChildren(...values.crews.map(c =>
-      el("li", "", `Crew ${c} · ${c === BIOMARKER_CREW ? `${DATA_DAYS} days of measurements` : "Schedule only"}`)));
+      el("li", "", `Crew ${c} · ${DATA_DAYS} days of measurements`)));
   });
 }
 
@@ -84,5 +84,5 @@ for (const form of steps) {
 }
 
 // 우주인 요약에 쓸 기본 기록 수
-loadCsv(BIOMARKER_CSV).then(rows => { values.records = rows.length; }).catch(() => {});
+loadCrewData(currentCrew()).then(rows => { values.records = rows.length; }).catch(() => {});
 show(1);

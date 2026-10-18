@@ -317,6 +317,9 @@ body.onboarding { display: grid; min-height: 100vh; place-items: center; padding
 .role h2 { margin-top: 26px; font-size: 26px; font-weight: 400; }
 .role p { margin: 18px 0 0; color: var(--muted); font-size: 15px; line-height: 1.5; }
 .role .cta { margin-top: 30px; }
+/* 온보딩: 우주인 → 크루 선택 */
+.crew-buttons { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 14px; }
+.crew-buttons .cta { margin: 0; text-decoration: none; }
 
 /* 지구: 대원 개요 */
 .crew-cards { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }

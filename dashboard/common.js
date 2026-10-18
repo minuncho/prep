@@ -3,14 +3,16 @@
 // 데이터 경로는 이 파일(dashboard/common.js) 위치를 기준으로 잡는다
 const DATA_DIR = new URL("../data/", document.currentScript.src);
 const EVENTS_CSV = new URL("event.csv", DATA_DIR).href;
-const BIOMARKER_CSV = new URL("A_data.csv", DATA_DIR).href;
+// 대원별 바이오마커 기록 (A_data.csv ~ D_data.csv)
+const crewCsv = crew => new URL(`${crew}_data.csv`, DATA_DIR).href;
 const INSTRUCTION_CSV = new URL("instruction.csv", DATA_DIR).href;
 const BIOMARKERS_CSV = new URL("biomarkers.csv", DATA_DIR).href;
 
 // 지금 보는 화면이 어느 쪽인지. 지구 쪽은 의사가 대원 A~D를 골라 본다
 const SIDE = location.pathname.includes("/earth/") ? "earth" : "mars";
 const CREWS = ["A", "B", "C", "D"];
-const BIOMARKER_CREW = "A"; // 생체 데이터는 A 대원 것만 있다
+const DEFAULT_CREW = "A"; // 고른 대원이 없을 때
+const CREW_KEY = "dashboard.crew"; // 우주인이 온보딩에서 고른 대원
 
 // 지구↔화성 통신 간격. 메시지·안내는 이만큼 늦게 도착하고, 화성 시계는 이만큼 늦게 간다 (space-sim과 같은 방식)
 const LINK_DELAY_MS = 20 * 60000;
@@ -19,7 +21,7 @@ const sideNow = () => Date.now() - CLOCK_LAG_MS;
 // ms → "YYYY-MM-DD HH:MM:SS" (UTC)
 const fmtUtc = ms => new Date(ms).toISOString().slice(0, 19).replace("T", " ");
 
-// 미션 시계. A 대원 데이터(A_data.csv)와 일정(event.csv)이 2026-10-01부터 120일치라서, 실제 하루가 지날 때마다
+// 미션 시계. 대원 데이터(A~D_data.csv)와 일정(event.csv)이 2026-10-01부터 120일치라서, 실제 하루가 지날 때마다
 // 미션 하루가 넘어가고 120일이 지나면 처음으로 돌아간다. 시각(시:분:초)은 실제 UTC를 그대로 쓴다.
 // ?day=4 처럼 주면 그 미션 날로 고정해서 볼 수 있다.
 const MISSION_START = "2026-10-01";
@@ -80,6 +82,8 @@ async function loadCsv(url) {
 
 // event.csv: 대원 A~D의 120일치 일정
 const loadEvents = () => loadCsv(EVENTS_CSV);
+// 한 대원의 바이오마커 기록
+const loadCrewData = crew => loadCsv(crewCsv(crew));
 
 // biomarkers.csv: 항목별 분류(Category), 측정 방법, 주기, 설명
 async function loadBiomarkerInfo() {
@@ -113,10 +117,28 @@ function el(tag, cls, text) {
 
 const longDate = (d, opts) => toDate(d).toLocaleDateString("en-US", { timeZone: "UTC", ...opts });
 
-// 의사 화면은 ?crew=B 처럼 대원을 고른다. 우주인 화면은 늘 A 대원이다
+// 의사 화면은 ?crew=B 처럼 대원을 고른다.
+// 우주인 화면은 온보딩에서 고른 대원이다 (?crew=B로 들어오면 그 대원을 이 브라우저에 기억한다)
 function currentCrew() {
-  const crew = SIDE === "earth" && new URLSearchParams(location.search).get("crew");
-  return CREWS.includes(crew) ? crew : BIOMARKER_CREW;
+  const fromUrl = new URLSearchParams(location.search).get("crew");
+  if (SIDE === "earth") return CREWS.includes(fromUrl) ? fromUrl : DEFAULT_CREW;
+  if (CREWS.includes(fromUrl)) {
+    try { localStorage.setItem(CREW_KEY, fromUrl); } catch {}
+    return fromUrl;
+  }
+  try {
+    const saved = localStorage.getItem(CREW_KEY);
+    if (CREWS.includes(saved)) return saved;
+  } catch {}
+  return DEFAULT_CREW;
+}
+
+// 우주인 화면의 "Crew A" 같은 표시를 고른 대원으로 채운다 (스크립트가 본문 끝에 있어 바로 실행된다)
+if (SIDE === "mars") {
+  const crew = currentCrew();
+  document.querySelectorAll("[data-crew-label]").forEach(node => {
+    node.textContent = node.dataset.crewLabel === "initial" ? crew : `Crew ${crew}`;
+  });
 }
 const crewQuery = crew => SIDE === "earth" ? `crew=${crew}` : "";
 function pageUrl(page, params = {}) {

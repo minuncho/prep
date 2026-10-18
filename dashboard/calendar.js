@@ -1,4 +1,4 @@
-// 주간 캘린더 화면 (화성·지구 공용). 일정은 event.csv, 수면 수치는 A_data.csv,
+// 주간 캘린더 화면 (화성·지구 공용). 일정은 event.csv, 수면 수치는 대원별 {crew}_data.csv,
 // 항목 분류·설명은 biomarkers.csv에서 읽는다.
 // 지구 화면에는 대원 카드, 검토 필요 목록, 대원 선택 탭이 더 있다.
 
@@ -8,7 +8,7 @@ const MONTHS = ["January", "February", "March", "April", "May", "June", "July",
 const TODAY = NOW.slice(0, 10);
 const state = {
   events: [],
-  biomarkers: [],
+  byCrew: {}, // 대원별 바이오마커 기록 (지구는 A~D 전부, 화성은 내 기록만)
   info: {},
   // 오늘이 들어 있는 주 (월요일 시작, 월~일)
   weekStart: addDays(TODAY, -((toDate(TODAY).getUTCDay() + 6) % 7)),
@@ -21,9 +21,10 @@ function eventsOn(date) {
     e.start_timestamp.startsWith(date) && e.Crew.split(",").includes(state.crew));
 }
 
+const recordsOf = crew => state.byCrew[crew] || [];
+
 function biomarker(date, name, crew = state.crew) {
-  if (crew !== BIOMARKER_CREW) return null;
-  return state.biomarkers.find(b => b.timestamp.startsWith(date) && b.Biomarker === name && measured(b)) || null;
+  return recordsOf(crew).find(b => b.timestamp.startsWith(date) && b.Biomarker === name && measured(b)) || null;
 }
 
 const isMeal = e => /meal/i.test(e.activity_summary);
@@ -80,7 +81,7 @@ function renderDay(date) {
 function renderLog() {
   document.getElementById("log-sub").textContent = "Last 24 hours · Latest records first";
 
-  const records = state.crew !== BIOMARKER_CREW ? [] : recent(state.biomarkers)
+  const records = recent(recordsOf(state.crew))
     .sort((a, b) => b.timestamp.localeCompare(a.timestamp));
 
   const body = document.getElementById("log");
@@ -113,7 +114,7 @@ function renderLog() {
 
 // 가장 최근 메시지 한 개
 function renderRecent() {
-  const thread = loadThread(state.crew, state.crew === BIOMARKER_CREW ? latest(state.biomarkers, "TST") : null);
+  const thread = loadThread(state.crew, latest(recordsOf(state.crew), "TST"));
   const last = thread[thread.length - 1];
   const other = SIDE === "earth" ? "crew" : "doctor";
   const lastFromOther = [...thread].reverse().find(m => m.from === other);
@@ -137,7 +138,7 @@ function renderCrewOverview() {
   if (!cards) return;
 
   cards.replaceChildren(...CREWS.map(crew => {
-    const own = crew === BIOMARKER_CREW ? state.biomarkers : [];
+    const own = recordsOf(crew);
     const tst = latest(own, "TST");
     const se = latest(own, "SE");
     const card = el("a", "crew-card" + (crew === state.crew ? " selected" : ""));
@@ -161,7 +162,7 @@ function renderCrewOverview() {
   }));
 
   const flagged = CREWS.flatMap(crew => {
-    const checks = crew !== BIOMARKER_CREW ? [] : recent(state.biomarkers)
+    const checks = recent(recordsOf(crew))
       .filter(b => b.Status !== "Normal")
       .sort((a, b) => SEVERITY[b.Status] - SEVERITY[a.Status]);
     if (!checks.length) return [];
@@ -189,8 +190,12 @@ async function init() {
   renderTopbar("calendar");
 
   try {
-    [state.events, state.biomarkers, state.info] =
-      await Promise.all([loadEvents(), loadCsv(BIOMARKER_CSV), loadBiomarkerInfo()]);
+    // 지구는 대원 카드에 A~D가 다 필요하고, 화성은 내 기록만 있으면 된다
+    const crews = SIDE === "earth" ? CREWS : [state.crew];
+    let rows;
+    [state.events, state.info, ...rows] =
+      await Promise.all([loadEvents(), loadBiomarkerInfo(), ...crews.map(loadCrewData)]);
+    crews.forEach((crew, i) => { state.byCrew[crew] = rows[i]; });
   } catch (err) {
     document.getElementById("week").textContent =
       `Could not load data (${err.message}). Serve the prep folder over HTTP.`;

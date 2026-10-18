@@ -1,8 +1,8 @@
-// 화성 — 의사와의 대화. 공유된 수면 기록은 A_data.csv에서 읽는다.
+// 화성 — 의사와의 대화. 공유된 수면 기록은 내 대원의 {crew}_data.csv에서 읽는다.
 // 대화는 브라우저 저장소에 대원별로 저장되어 지구(의사) 화면과 같이 쓰고, 상대에게는 LINK_DELAY_MS 뒤에 보인다.
 
 const TODAY = NOW.slice(0, 10);
-const CREW = BIOMARKER_CREW;
+const CREW = currentCrew();
 
 function renderShared(tst) {
   const when = document.getElementById("shared-when");
@@ -45,7 +45,7 @@ async function init() {
 
   let tst = null;
   try {
-    const biomarkers = await loadCsv(BIOMARKER_CSV);
+    const biomarkers = await loadCrewData(CREW);
     tst = latest(biomarkers, "TST");
   } catch (err) {
     console.error(err);

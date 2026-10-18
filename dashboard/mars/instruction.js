@@ -1,7 +1,8 @@
-// 화성 — Health Instruction. 지금까지 측정된 오늘 기록(A_data.csv) 중 Normal이 아닌 항목에
+// 화성 — Health Instruction. 내 대원의 지금까지 측정된 기록({crew}_data.csv) 중 Normal이 아닌 항목에
 // instruction.csv의 안내문을 붙여 보여준다.
 
 const TODAY = NOW.slice(0, 10);
+const CREW = currentCrew();
 const state = { items: [], kind: "", query: "" };
 
 function buildItems(biomarkers, instructions, info) {
@@ -30,11 +31,11 @@ function buildItems(biomarkers, instructions, info) {
     name: `Your sleep check on ${longDate(tst.timestamp.slice(0, 10), { month: "long", day: "numeric" })} →`,
     href: "daily.html",
     body: `Time asleep: ${tst.Figure} hours` + (se ? ` · Sleep efficiency: ${se.Figure}%` : ""),
-    source: `${dayLabel(tst.timestamp.slice(0, 10))} ${tst.timestamp.slice(11, 16)} · A_data.csv`,
+    source: `${dayLabel(tst.timestamp.slice(0, 10))} ${tst.timestamp.slice(11, 16)} · ${CREW}_data.csv`,
   }] : [];
 
   // 의사가 지구 화면에서 저장한 안내
-  const saved = loadInstructions(BIOMARKER_CREW).reverse().map(n => ({
+  const saved = loadInstructions(CREW).reverse().map(n => ({
     kind: "Doctor’s notes",
     name: n.title,
     body: n.body,
@@ -75,7 +76,7 @@ async function init() {
 
   try {
     const [biomarkers, instructions, info] =
-      await Promise.all([loadCsv(BIOMARKER_CSV), loadCsv(INSTRUCTION_CSV), loadBiomarkerInfo()]);
+      await Promise.all([loadCrewData(CREW), loadCsv(INSTRUCTION_CSV), loadBiomarkerInfo()]);
     state.items = buildItems(biomarkers, instructions, info);
   } catch (err) {
     document.getElementById("items").replaceChildren(el("p", "none", `Could not load data (${err.message}).`));

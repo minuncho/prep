@@ -1,7 +1,9 @@
 // 화면 담당. 로직(재생, 요약, priority 선별, 전송 순서)은 모두 Rust(sim.rs)에 있다.
 // 여기서는 Rust가 준 값을 그리고, hot·priority 파일을 zstd로 압축해서 Rust에 돌려준다.
 // A_cold는 Rust가 숫자 열 + CCSDS 121로 압축한 바이트를 그대로 보낸다.
-import init, { Sim } from './pkg/space_sim.js';
+// index.html이 붙인 버전(?v=)을 그대로 이어 붙여, 캐시된 예전 wasm과 섞이지 않게 한다
+const VERSION = new URL(import.meta.url).search;
+const { default: init, Sim } = await import(`./pkg/space_sim.js${VERSION}`);
 
 // ===== 설정 (두 창이 같은 값을 써야 한다) =====
 const LINK_BYTES_PER_SEC = 10 * 1024;     // 링크 속도 (테스트용 값)
@@ -24,7 +26,7 @@ document.title = `${SIDE_NAME} - Space Link Simulator`;
 if (SIDE === 'mars') $('marsPanel').style.display = 'grid';
 
 // ===== Rust 로직 =====
-await init();
+await init({ module_or_path: new URL(`./pkg/space_sim_bg.wasm${VERSION}`, import.meta.url) });
 const sim = new Sim(
   SIDE === 'mars', TZ, LAG_MS, TX_DELAY_MS, LINK_BYTES_PER_SEC,
   COLD_EVERY_MS, PRIO_EVERY_MS, Date.now()
