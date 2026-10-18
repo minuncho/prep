@@ -1,5 +1,5 @@
-// 하루 기록 화면 (화성·지구 공용). 수면 수치는 A_dummy120.csv, 조치 안내는 instruction.csv,
-// 활동은 event_dummy.csv에서 읽는다. ?date=YYYY-MM-DD 로 날짜를, 지구 화면은 ?crew=B 로 대원을 고른다.
+// 하루 기록 화면 (화성·지구 공용). 수면 수치는 A_data.csv, 조치 안내는 instruction.csv,
+// 활동은 event.csv에서 읽는다. ?date=YYYY-MM-DD 로 날짜를, 지구 화면은 ?crew=B 로 대원을 고른다.
 
 // 날짜를 안 주면 가장 최근 수면 기록이 있는 날 (오늘 07:00 측정 전이면 어제)
 let DATE = new URLSearchParams(location.search).get("date");

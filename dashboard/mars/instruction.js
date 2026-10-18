@@ -1,4 +1,4 @@
-// 화성 — Health Instruction. 지금까지 측정된 오늘 기록(A_dummy120.csv) 중 정상이 아닌 항목에
+// 화성 — Health Instruction. 지금까지 측정된 오늘 기록(A_data.csv) 중 정상이 아닌 항목에
 // instruction.csv의 안내문을 붙여 보여준다.
 
 const TODAY = NOW.slice(0, 10);
@@ -30,7 +30,7 @@ function buildItems(biomarkers, instructions, info) {
     name: `Your sleep check on ${longDate(tst.timestamp.slice(0, 10), { month: "long", day: "numeric" })} →`,
     href: "daily.html",
     body: `Time asleep: ${tst.Figure} hours` + (se ? ` · Sleep efficiency: ${se.Figure}%` : ""),
-    source: `${dayLabel(tst.timestamp.slice(0, 10))} ${tst.timestamp.slice(11, 16)} · A_dummy120.csv`,
+    source: `${dayLabel(tst.timestamp.slice(0, 10))} ${tst.timestamp.slice(11, 16)} · A_data.csv`,
   }] : [];
 
   // 의사가 지구 화면에서 저장한 안내

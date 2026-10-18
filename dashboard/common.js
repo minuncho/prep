@@ -2,8 +2,8 @@
 
 // 데이터 경로는 이 파일(dashboard/common.js) 위치를 기준으로 잡는다
 const DATA_DIR = new URL("../data/", document.currentScript.src);
-const EVENTS_CSV = new URL("event_dummy.csv", DATA_DIR).href;
-const BIOMARKER_CSV = new URL("A_dummy120.csv", DATA_DIR).href;
+const EVENTS_CSV = new URL("event.csv", DATA_DIR).href;
+const BIOMARKER_CSV = new URL("A_data.csv", DATA_DIR).href;
 const INSTRUCTION_CSV = new URL("instruction.csv", DATA_DIR).href;
 const BIOMARKERS_CSV = new URL("biomarkers.csv", DATA_DIR).href;
 
@@ -19,10 +19,10 @@ const sideNow = () => Date.now() - CLOCK_LAG_MS;
 // ms → "YYYY-MM-DD HH:MM:SS" (UTC)
 const fmtUtc = ms => new Date(ms).toISOString().slice(0, 19).replace("T", " ");
 
-// 미션 시계. A 대원 데이터(A_dummy120.csv)가 2026-01-01부터 120일치라서, 실제 하루가 지날 때마다
+// 미션 시계. A 대원 데이터(A_data.csv)와 일정(event.csv)이 2026-10-01부터 120일치라서, 실제 하루가 지날 때마다
 // 미션 하루가 넘어가고 120일이 지나면 처음으로 돌아간다. 시각(시:분:초)은 실제 UTC를 그대로 쓴다.
 // ?day=4 처럼 주면 그 미션 날로 고정해서 볼 수 있다.
-const MISSION_START = "2026-01-01";
+const MISSION_START = "2026-10-01";
 const DATA_DAYS = 120;
 const DAY_MS = 864e5;
 const MISSION_START_MS = Date.parse(MISSION_START + "T00:00:00Z");
@@ -78,16 +78,8 @@ async function loadCsv(url) {
   return parseCsv(await res.text());
 }
 
-// event_dummy.csv는 첫 7일치뿐이라, 그 한 주 일정을 120일 내내 매주 반복해서 쓴다
-async function loadEvents() {
-  const week = await loadCsv(EVENTS_CSV);
-  const shift = (ts, days) => addDays(ts.slice(0, 10), days) + ts.slice(10);
-  return Array.from({ length: Math.ceil(DATA_DAYS / 7) }, (_, w) => week.map(e => ({
-    ...e,
-    start_timestamp: shift(e.start_timestamp, w * 7),
-    end_timestamp: shift(e.end_timestamp, w * 7),
-  }))).flat();
-}
+// event.csv: 대원 A~D의 120일치 일정
+const loadEvents = () => loadCsv(EVENTS_CSV);
 
 // biomarkers.csv: 항목별 분류(Category), 측정 방법, 주기, 설명
 async function loadBiomarkerInfo() {
