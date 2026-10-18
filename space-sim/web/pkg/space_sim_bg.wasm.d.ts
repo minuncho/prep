@@ -3,7 +3,9 @@
 export const memory: WebAssembly.Memory;
 export const __wbg_sim_free: (a: number, b: number) => void;
 export const ccsds121Compress: (a: number, b: number) => [number, number];
+export const ccsds121CompressSamples: (a: number, b: number, c: number) => [number, number];
 export const sim_blocksCsv: (a: number, b: number) => [number, number];
+export const sim_coldNumeric: (a: number) => [number, number];
 export const sim_dispatch: (a: number, b: number) => [number, number];
 export const sim_enqueue: (a: number, b: number, c: number, d: number, e: number, f: number) => number;
 export const sim_force: (a: number, b: number, c: number) => void;

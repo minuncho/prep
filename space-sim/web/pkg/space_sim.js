@@ -29,6 +29,16 @@ export class Sim {
         }
     }
     /**
+     * cold 요약을 숫자 열로 바꾼 32비트 샘플 (숫자 압축 비교용)
+     * @returns {Uint32Array}
+     */
+    coldNumeric() {
+        const ret = wasm.sim_coldNumeric(this.__wbg_ptr);
+        var v1 = getArrayU32FromWasm0(ret[0], ret[1]).slice();
+        wasm.__wbindgen_free(ret[0], ret[1] * 4, 4);
+        return v1;
+    }
+    /**
      * 지금 보낼 수 있으면 `{blockId, kind, name, arriveAt}` JSON, 아니면 빈 문자열.
      * @param {number} now_ms
      * @returns {string}
@@ -167,7 +177,7 @@ export class Sim {
 if (Symbol.dispose) Sim.prototype[Symbol.dispose] = Sim.prototype.free;
 
 /**
- * CCSDS 121.0-B-3 무손실 압축 (용량 비교용). 압축된 바이트를 돌려준다.
+ * CCSDS 121.0-B-3 무손실 압축 (용량 비교용). 바이트를 8비트 샘플로 압축한다.
  * @param {Uint8Array} data
  * @returns {Uint8Array}
  */
@@ -175,6 +185,21 @@ export function ccsds121Compress(data) {
     const ptr0 = passArray8ToWasm0(data, wasm.__wbindgen_malloc);
     const len0 = WASM_VECTOR_LEN;
     const ret = wasm.ccsds121Compress(ptr0, len0);
+    var v2 = getArrayU8FromWasm0(ret[0], ret[1]).slice();
+    wasm.__wbindgen_free(ret[0], ret[1] * 1, 1);
+    return v2;
+}
+
+/**
+ * CCSDS 121.0-B-3 무손실 압축. n비트(4~32) 숫자 샘플을 압축한다.
+ * @param {Uint32Array} data
+ * @param {number} n
+ * @returns {Uint8Array}
+ */
+export function ccsds121CompressSamples(data, n) {
+    const ptr0 = passArray32ToWasm0(data, wasm.__wbindgen_malloc);
+    const len0 = WASM_VECTOR_LEN;
+    const ret = wasm.ccsds121CompressSamples(ptr0, len0, n);
     var v2 = getArrayU8FromWasm0(ret[0], ret[1]).slice();
     wasm.__wbindgen_free(ret[0], ret[1] * 1, 1);
     return v2;
@@ -209,6 +234,11 @@ const SimFinalization = (typeof FinalizationRegistry === 'undefined')
     ? { register: () => {}, unregister: () => {} }
     : new FinalizationRegistry(ptr => wasm.__wbg_sim_free(ptr, 1));
 
+function getArrayU32FromWasm0(ptr, len) {
+    ptr = ptr >>> 0;
+    return getUint32ArrayMemory0().subarray(ptr / 4, ptr / 4 + len);
+}
+
 function getArrayU8FromWasm0(ptr, len) {
     ptr = ptr >>> 0;
     return getUint8ArrayMemory0().subarray(ptr / 1, ptr / 1 + len);
@@ -218,12 +248,27 @@ function getStringFromWasm0(ptr, len) {
     return decodeText(ptr >>> 0, len);
 }
 
+let cachedUint32ArrayMemory0 = null;
+function getUint32ArrayMemory0() {
+    if (cachedUint32ArrayMemory0 === null || cachedUint32ArrayMemory0.byteLength === 0) {
+        cachedUint32ArrayMemory0 = new Uint32Array(wasm.memory.buffer);
+    }
+    return cachedUint32ArrayMemory0;
+}
+
 let cachedUint8ArrayMemory0 = null;
 function getUint8ArrayMemory0() {
     if (cachedUint8ArrayMemory0 === null || cachedUint8ArrayMemory0.byteLength === 0) {
         cachedUint8ArrayMemory0 = new Uint8Array(wasm.memory.buffer);
     }
     return cachedUint8ArrayMemory0;
+}
+
+function passArray32ToWasm0(arg, malloc) {
+    const ptr = malloc(arg.length * 4, 4) >>> 0;
+    getUint32ArrayMemory0().set(arg, ptr / 4);
+    WASM_VECTOR_LEN = arg.length;
+    return ptr;
 }
 
 function passArray8ToWasm0(arg, malloc) {
@@ -310,6 +355,7 @@ function __wbg_finalize_init(instance, module) {
     wasmInstance = instance;
     wasm = instance.exports;
     wasmModule = module;
+    cachedUint32ArrayMemory0 = null;
     cachedUint8ArrayMemory0 = null;
     wasm.__wbindgen_start();
     return wasm;

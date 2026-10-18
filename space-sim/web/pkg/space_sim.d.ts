@@ -9,6 +9,10 @@ export class Sim {
      */
     blocksCsv(now_ms: number): string;
     /**
+     * cold 요약을 숫자 열로 바꾼 32비트 샘플 (숫자 압축 비교용)
+     */
+    coldNumeric(): Uint32Array;
+    /**
      * 지금 보낼 수 있으면 `{blockId, kind, name, arriveAt}` JSON, 아니면 빈 문자열.
      */
     dispatch(now_ms: number): string;
@@ -49,9 +53,14 @@ export class Sim {
 }
 
 /**
- * CCSDS 121.0-B-3 무손실 압축 (용량 비교용). 압축된 바이트를 돌려준다.
+ * CCSDS 121.0-B-3 무손실 압축 (용량 비교용). 바이트를 8비트 샘플로 압축한다.
  */
 export function ccsds121Compress(data: Uint8Array): Uint8Array;
+
+/**
+ * CCSDS 121.0-B-3 무손실 압축. n비트(4~32) 숫자 샘플을 압축한다.
+ */
+export function ccsds121CompressSamples(data: Uint32Array, n: number): Uint8Array;
 
 export type InitInput = RequestInfo | URL | Response | BufferSource | WebAssembly.Module;
 
@@ -59,7 +68,9 @@ export interface InitOutput {
     readonly memory: WebAssembly.Memory;
     readonly __wbg_sim_free: (a: number, b: number) => void;
     readonly ccsds121Compress: (a: number, b: number) => [number, number];
+    readonly ccsds121CompressSamples: (a: number, b: number, c: number) => [number, number];
     readonly sim_blocksCsv: (a: number, b: number) => [number, number];
+    readonly sim_coldNumeric: (a: number) => [number, number];
     readonly sim_dispatch: (a: number, b: number) => [number, number];
     readonly sim_enqueue: (a: number, b: number, c: number, d: number, e: number, f: number) => number;
     readonly sim_force: (a: number, b: number, c: number) => void;

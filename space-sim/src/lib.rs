@@ -109,6 +109,12 @@ impl Sim {
         self.core.snapshot(now_ms as i64).to_string()
     }
 
+    /// cold 요약을 숫자 열로 바꾼 32비트 샘플 (숫자 압축 비교용)
+    #[wasm_bindgen(js_name = coldNumeric)]
+    pub fn cold_numeric(&self) -> Vec<u32> {
+        self.core.cold_numeric()
+    }
+
     /// 용량 비교용 누적 텍스트 `{hot, cold, prio}` (JSON 문자열). 행이 없으면 빈 문자열 값.
     #[wasm_bindgen(js_name = sizeTexts)]
     pub fn size_texts(&self) -> String {
@@ -116,8 +122,14 @@ impl Sim {
     }
 }
 
-/// CCSDS 121.0-B-3 무손실 압축 (용량 비교용). 압축된 바이트를 돌려준다.
+/// CCSDS 121.0-B-3 무손실 압축 (용량 비교용). 바이트를 8비트 샘플로 압축한다.
 #[wasm_bindgen(js_name = ccsds121Compress)]
 pub fn ccsds121_compress(data: &[u8]) -> Vec<u8> {
     ccsds::compress(data)
+}
+
+/// CCSDS 121.0-B-3 무손실 압축. n비트(4~32) 숫자 샘플을 압축한다.
+#[wasm_bindgen(js_name = ccsds121CompressSamples)]
+pub fn ccsds121_compress_samples(data: &[u32], n: u32) -> Vec<u8> {
+    ccsds::compress_samples(data, n)
 }

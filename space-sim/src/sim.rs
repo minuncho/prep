@@ -724,6 +724,28 @@ impl Sim {
     }
 
     /// 용량 비교용 누적 텍스트 (JS가 zstd로 압축해서 크기를 잰다). 행이 없으면 빈 문자열.
+    /// cold 요약을 숫자 열로 바꾼 32비트 샘플 (CCSDS·zstd 숫자 비교용).
+    /// 열 단위로 이어 붙인다: 바이오마커 ID, count, min, max, mean, 시작(초), 끝(초).
+    /// - ID는 이름 정렬 순서 번호. 이름 목록은 화성·지구가 미리 공유한다고 본다
+    /// - min·max·mean은 0.001 단위 정수, 음수는 zigzag로 0 이상 정수로 바꾼다
+    pub fn cold_numeric(&self) -> Vec<u32> {
+        let milli = |v: f64| {
+            let i = (v * 1000.0).round() as i32;
+            ((i << 1) ^ (i >> 31)) as u32
+        };
+        let secs = |ms: i64| (ms.div_euclid(1000)) as u32;
+        let accs: Vec<&Acc> = self.summary.values().collect();
+        let mut out = Vec::with_capacity(accs.len() * 7);
+        out.extend((0..accs.len() as u32).collect::<Vec<_>>());
+        out.extend(accs.iter().map(|a| a.count as u32));
+        out.extend(accs.iter().map(|a| milli(a.min)));
+        out.extend(accs.iter().map(|a| milli(a.max)));
+        out.extend(accs.iter().map(|a| milli(a.sum / a.count as f64)));
+        out.extend(accs.iter().map(|a| secs(a.start)));
+        out.extend(accs.iter().map(|a| secs(a.end)));
+        out
+    }
+
     pub fn size_texts(&self) -> Value {
         let hot = if self.ingested_rows == 0 {
             String::new()
@@ -743,6 +765,26 @@ impl Sim {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn cold_numeric_has_seven_columns_per_biomarker() {
+        let mut sim = Sim::new(cfg(true), 0);
+        sim.load("timestamp,Biomarker,Figure,Status\n\
+2026-01-01 00:00,TST,7.25,Normal\n\
+2026-01-01 00:00,SE,-1.5,Normal\n\
+2026-01-01 00:05,TST,6.75,Normal\n").unwrap();
+        sim.set_playing(true);
+        for _ in 0..5 {
+            sim.play_step();
+        }
+        let v = sim.cold_numeric();
+        assert_eq!(v.len(), 2 * 7);
+        // 정렬 순서: SE, TST
+        assert_eq!(&v[0..2], &[0, 1]); // ID
+        assert_eq!(&v[2..4], &[1, 2]); // count
+        assert_eq!(v[4], 2999); // SE min -1.5 → -1500 → zigzag 2999
+        assert_eq!(v[9], 14000); // TST mean 7.0 → 7000 → zigzag 14000
+    }
 
     #[test]
     fn korean_status_values_still_work() {
