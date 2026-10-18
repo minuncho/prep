@@ -4,6 +4,7 @@
 
 use serde_json::{json, Value};
 use std::collections::{BTreeMap, VecDeque};
+use crate::ccsds;
 use std::fmt::Write;
 
 /// 원본을 데이터 시간 기준으로 이만큼 보관하고, 넘기면 요약에 반영한다 (60초)
@@ -12,7 +13,6 @@ pub const HOT_KEEP_MS: i64 = 60_000;
 pub const PRIO_CONTEXT_N: usize = 3;
 const DAY_MS: i64 = 86_400_000;
 const HOT_HEADER: &str = "timestamp,Biomarker,Figure,Status";
-const COLD_HEADER: &str = "Biomarker,count,min,max,mean,start_timestamp,end_timestamp";
 const LOG_LIMIT: usize = 100;
 
 pub fn is_priority(status: &str) -> bool {
@@ -125,6 +125,8 @@ pub struct Outgoing {
     pub kind: Kind,
     pub name: String,
     pub text: String,
+    /// 이미 압축된 바이트 (A_cold: 숫자 열 + CCSDS 121). None이면 JS가 text를 zstd로 압축한다
+    pub payload: Option<Vec<u8>>,
 }
 
 /// 링크가 비어서 실제로 보내기 시작한 항목
@@ -473,25 +475,6 @@ impl Sim {
         acc.end = acc.end.max(r.ts);
     }
 
-    fn cold_text(&self) -> String {
-        let tz = self.cfg.tz_offset_min;
-        let mut out = String::from(COLD_HEADER);
-        out.push('\n');
-        for (name, a) in &self.summary {
-            let _ = writeln!(
-                out,
-                "{name},{},{},{},{},{},{}",
-                a.count,
-                a.min,
-                a.max,
-                a.sum / a.count as f64,
-                fmt_local(a.start, tz),
-                fmt_local(a.end, tz)
-            );
-        }
-        out
-    }
-
     // ---------- 발송 요청 ----------
 
     /// 발송 시각이 되었으면 요청을 쌓고, 가장 앞의 요청 하나를 파일로 만들어 돌려준다.
@@ -550,7 +533,7 @@ impl Sim {
                     text.push('\n');
                 }
                 self.log(format!("Sent A_priority.bin ({} rows, before zstd)", rows.len()));
-                Some(Outgoing { kind: Kind::Priority, name: "A_priority.bin".into(), text })
+                Some(Outgoing { kind: Kind::Priority, name: "A_priority.bin".into(), text, payload: None })
             }
             Req::Cold => {
                 if self.summary.is_empty() {
@@ -558,13 +541,15 @@ impl Sim {
                     return None;
                 }
                 let n = self.summary.len();
-                self.log(format!("Scheduled send: A_cold.bin ({n} biomarkers, before zstd)"));
-                Some(Outgoing { kind: Kind::Bulk, name: "A_cold.bin".into(), text: self.cold_text() })
+                let payload = self.cold_ccsds();
+                self.log(format!("Scheduled send: A_cold.bin ({n} biomarkers, numeric + CCSDS 121, {} B)", payload.len()));
+                Some(Outgoing { kind: Kind::Bulk, name: "A_cold.bin".into(), text: String::new(), payload: Some(payload) })
             }
             Req::Blocks => Some(Outgoing {
                 kind: Kind::Bulk,
                 name: "blocks.csv".into(),
                 text: self.blocks_csv(now),
+                payload: None,
             }),
         }
     }
@@ -724,7 +709,18 @@ impl Sim {
     }
 
     /// 용량 비교용 누적 텍스트 (JS가 zstd로 압축해서 크기를 잰다). 행이 없으면 빈 문자열.
-    /// cold 요약을 숫자 열로 바꾼 32비트 샘플 (CCSDS·zstd 숫자 비교용).
+    /// A_cold.bin 내용: 바이오마커 수(2바이트, big-endian) + 숫자 열을 CCSDS 121(32비트 샘플)로 압축한 것.
+    /// 받는 쪽은 바이오마커 수 × 7개 샘플을 풀면 된다. 요약이 비어 있으면 빈 바이트.
+    pub fn cold_ccsds(&self) -> Vec<u8> {
+        if self.summary.is_empty() {
+            return Vec::new();
+        }
+        let mut out = (self.summary.len() as u16).to_be_bytes().to_vec();
+        out.extend(ccsds::compress_samples(&self.cold_numeric(), 32));
+        out
+    }
+
+    /// cold 요약을 숫자 열로 바꾼 32비트 샘플 (A_cold.bin의 CCSDS 입력).
     /// 열 단위로 이어 붙인다: 바이오마커 ID, count, min, max, mean, 시작(초), 끝(초).
     /// - ID는 이름 정렬 순서 번호. 이름 목록은 화성·지구가 미리 공유한다고 본다
     /// - min·max·mean은 0.001 단위 정수, 음수는 zigzag로 0 이상 정수로 바꾼다
@@ -752,13 +748,12 @@ impl Sim {
         } else {
             format!("{HOT_HEADER}\n{}", self.ingested_text)
         };
-        let cold = if self.summary.is_empty() { String::new() } else { self.cold_text() };
         let prio = if self.prio_all.is_empty() {
             String::new()
         } else {
             format!("{HOT_HEADER}\n{}", self.prio_text)
         };
-        json!({ "hot": hot, "cold": cold, "prio": prio })
+        json!({ "hot": hot, "prio": prio })
     }
 }
 
@@ -784,6 +779,25 @@ mod tests {
         assert_eq!(&v[2..4], &[1, 2]); // count
         assert_eq!(v[4], 2999); // SE min -1.5 → -1500 → zigzag 2999
         assert_eq!(v[9], 14000); // TST mean 7.0 → 7000 → zigzag 14000
+    }
+
+    #[test]
+    fn cold_payload_is_numeric_ccsds_and_decodes() {
+        let mut sim = Sim::new(cfg(true), 0);
+        sim.load(CSV).unwrap();
+        sim.set_playing(true);
+        for _ in 0..20 {
+            sim.play_step();
+        }
+        let nums = sim.cold_numeric();
+        let payload = sim.cold_ccsds();
+        let count = u16::from_be_bytes([payload[0], payload[1]]) as usize;
+        assert_eq!(count * 7, nums.len());
+        assert_eq!(ccsds::decompress_samples(&payload[2..], nums.len(), 32).unwrap(), nums);
+        sim.force("cold");
+        let out = sim.next_request(0).expect("A_cold 요청");
+        assert_eq!(out.name, "A_cold.bin");
+        assert_eq!(out.payload.as_deref(), Some(payload.as_slice()));
     }
 
     #[test]

@@ -1,7 +1,6 @@
 //! CCSDS 121.0-B-3 무손실 압축 (Adaptive Entropy Coder, Rice 부호화).
 //! 우주 탐사선이 측정값 스트림을 보낼 때 쓰는 표준 방식이다. 샘플 폭 n은 1~32비트.
-//! - 텍스트 비교: 바이트를 8비트 샘플로 압축 (`compress`)
-//! - 숫자 비교: 요약 숫자 열을 32비트 샘플로 압축 (`compress_samples(.., 32)`)
+//! space-sim은 A_cold 요약 숫자 열을 32비트 샘플로 압축해서 보낸다 (`compress_samples(.., 32)`).
 //!
 //! 구성
 //! - 전처리: 바로 앞 샘플로 예측(unit-delay predictor) → 예측 오차를 0 이상 정수로 매핑
@@ -283,7 +282,8 @@ pub fn compress_samples(data: &[u32], n: u32) -> Vec<u8> {
     w.finish()
 }
 
-/// 바이트 열을 8비트 샘플로 압축한다 (텍스트 비교용).
+/// 바이트 열을 8비트 샘플로 압축한다 (테스트용).
+#[cfg(test)]
 pub fn compress(data: &[u8]) -> Vec<u8> {
     let samples: Vec<u32> = data.iter().map(|&b| b as u32).collect();
     compress_samples(&samples, 8)

@@ -1,7 +1,7 @@
 // 화면 담당. 로직(재생, 요약, priority 선별, 전송 순서)은 모두 Rust(sim.rs)에 있다.
-// 여기서는 Rust가 준 값을 그리고, 보낼 파일을 zstd로 압축해서 Rust에 돌려준다.
-// 용량 비교에는 우주 통신 표준 압축(CCSDS 121, Rust 구현)도 같이 보여준다.
-import init, { Sim, ccsds121Compress, ccsds121CompressSamples } from './pkg/space_sim.js';
+// 여기서는 Rust가 준 값을 그리고, hot·priority 파일을 zstd로 압축해서 Rust에 돌려준다.
+// A_cold는 Rust가 숫자 열 + CCSDS 121로 압축한 바이트를 그대로 보낸다.
+import init, { Sim } from './pkg/space_sim.js';
 
 // ===== 설정 (두 창이 같은 값을 써야 한다) =====
 const LINK_BYTES_PER_SEC = 10 * 1024;     // 링크 속도 (테스트용 값)
@@ -58,14 +58,14 @@ channel.onmessage = e => {
   if (e.data.from !== SIDE) inTransit.push(e.data);
 };
 
-// Rust가 보낼 파일을 만들면 압축해서 기록에 올린다
+// Rust가 보낼 파일을 만들면 압축해서 기록에 올린다 (A_cold는 이미 CCSDS로 압축되어 온다)
 function pumpRequests(now) {
   if (SIDE !== 'mars' || !zstdReady) return;
   for (;;) {
     const s = sim.nextRequest(now);
     if (!s) break;
     const req = JSON.parse(s);
-    const bytes = compress(req.text);
+    const bytes = req.encoding === 'ccsds121' ? new Uint8Array(req.bytes) : compress(req.text);
     const id = sim.enqueue(req.kind, req.name, bytes.length);
     pendingBytes.set(id, bytes);
   }
@@ -170,30 +170,19 @@ function fmtBytes(n) {
   return `${(n / 1024 / 1024).toFixed(2)} MB`;
 }
 
-// 용량 비교: 누적 텍스트를 zstd로 압축해서 잰다. 행이 없으면 0 B.
-// cold는 같은 요약을 텍스트(CSV)와 숫자 열(32비트) 두 형태로 만들어 zstd·CCSDS 121로 각각 잰다.
+// 용량 비교: hot·priority는 누적 텍스트를 zstd로, cold는 A_cold.bin(숫자 열 + CCSDS 121) 크기로 잰다.
+// 행이 없으면 0 B.
 function renderSizes() {
   const texts = JSON.parse(sim.sizeTexts());
   const sizeOf = t => {
     if (t === '') return 0;
     return zstdReady ? compress(t).length : null;
   };
-  const ccsdsSizeOf = t => (t === '' ? 0 : ccsds121Compress(new TextEncoder().encode(t)).length);
-  const nums = sim.coldNumeric();
-  const numBytes = new Uint8Array(nums.length * 4);
-  nums.forEach((v, i) => new DataView(numBytes.buffer).setUint32(i * 4, v)); // big-endian
-  const numZstd = nums.length === 0 ? 0 : (zstdReady ? zstdCompress(numBytes, ZSTD_LEVEL).length : null);
-  const numCcsds = nums.length === 0 ? 0 : ccsds121CompressSamples(nums, 32).length;
   const show = v => (v === null ? 'Loading' : fmtBytes(v));
   fillTable('sizeTable', ['Cumulative', 'Size'], [
     ['File total (full raw)', playFileSize ? fmtBytes(playFileSize) : '-'],
     ['hot total (full raw + zstd)', show(sizeOf(texts.hot))],
-    ['cold total (summary, raw text)', fmtBytes(new TextEncoder().encode(texts.cold).length)],
-    ['cold total (summary, zstd)', show(sizeOf(texts.cold))],
-    ['cold total (summary, CCSDS 121)', show(ccsdsSizeOf(texts.cold))],
-    ['cold total (summary numeric, raw)', fmtBytes(numBytes.length)],
-    ['cold total (summary numeric, zstd)', show(numZstd)],
-    ['cold total (summary numeric, CCSDS 121)', show(numCcsds)],
+    ['cold total (summary numeric + CCSDS 121)', fmtBytes(sim.coldPayload().length)],
     ['priority total (zstd only)', show(sizeOf(texts.prio))],
   ]);
 }

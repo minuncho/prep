@@ -1,5 +1,6 @@
 //! 브라우저(WebAssembly) 바인딩. 실제 로직은 sim.rs에 있다.
-//! JS는 이 파일이 내보내는 `Sim`과 `ccsds121Compress`를 호출하고, 화면 그리기와 zstd 압축을 맡는다.
+//! JS는 이 파일이 내보내는 `Sim`을 호출하고, 화면 그리기와 zstd 압축(hot·priority)을 맡는다.
+//! A_cold는 Rust가 숫자 열 + CCSDS 121로 직접 압축해서 넘긴다.
 
 mod ccsds;
 mod sim;
@@ -59,14 +60,17 @@ impl Sim {
         self.core.play_step();
     }
 
-    /// 발송할 파일이 있으면 `{kind, name, text}` JSON, 없으면 빈 문자열.
+    /// 발송할 파일이 있으면 `{kind, name, encoding, text, bytes}` JSON, 없으면 빈 문자열.
+    /// encoding이 "zstd"면 JS가 text를 압축하고, "ccsds121"이면 bytes를 그대로 보낸다.
     #[wasm_bindgen(js_name = nextRequest)]
     pub fn next_request(&mut self, now_ms: f64) -> String {
         match self.core.next_request(now_ms as i64) {
             Some(out) => json!({
                 "kind": out.kind.as_str(),
                 "name": out.name,
+                "encoding": if out.payload.is_some() { "ccsds121" } else { "zstd" },
                 "text": out.text,
+                "bytes": out.payload,
             })
             .to_string(),
             None => String::new(),
@@ -109,27 +113,15 @@ impl Sim {
         self.core.snapshot(now_ms as i64).to_string()
     }
 
-    /// cold 요약을 숫자 열로 바꾼 32비트 샘플 (숫자 압축 비교용)
-    #[wasm_bindgen(js_name = coldNumeric)]
-    pub fn cold_numeric(&self) -> Vec<u32> {
-        self.core.cold_numeric()
+    /// 지금 요약으로 만든 A_cold.bin 바이트 (숫자 열 + CCSDS 121). 용량 표시용
+    #[wasm_bindgen(js_name = coldPayload)]
+    pub fn cold_payload(&self) -> Vec<u8> {
+        self.core.cold_ccsds()
     }
 
-    /// 용량 비교용 누적 텍스트 `{hot, cold, prio}` (JSON 문자열). 행이 없으면 빈 문자열 값.
+    /// 용량 비교용 누적 텍스트 `{hot, prio}` (JSON 문자열). 행이 없으면 빈 문자열 값.
     #[wasm_bindgen(js_name = sizeTexts)]
     pub fn size_texts(&self) -> String {
         self.core.size_texts().to_string()
     }
-}
-
-/// CCSDS 121.0-B-3 무손실 압축 (용량 비교용). 바이트를 8비트 샘플로 압축한다.
-#[wasm_bindgen(js_name = ccsds121Compress)]
-pub fn ccsds121_compress(data: &[u8]) -> Vec<u8> {
-    ccsds::compress(data)
-}
-
-/// CCSDS 121.0-B-3 무손실 압축. n비트(4~32) 숫자 샘플을 압축한다.
-#[wasm_bindgen(js_name = ccsds121CompressSamples)]
-pub fn ccsds121_compress_samples(data: &[u32], n: u32) -> Vec<u8> {
-    ccsds::compress_samples(data, n)
 }
